@@ -3,16 +3,26 @@
 body {
   background: #C2B2A7;
   font-family: 'Belleza', sans-serif;
+  font-size: 3em;
   text-align: center;
 }
 h1{
-  color: 2F2930;
+  color: #2F2930;
 }
-a {
+ul.social-media > li {
+  display: inline-block;
+  margin: 0 7px;
+  list-style: none;
+}
+ul.social-media a {
   background: #335577;
   color: #938F8C;
-  padding: 2em;
+  padding: 20px;
+  text-decoration: none;
+  transition: all 0.5s ease;
 }
-.social-media > li {
-  float: left;
+ul.social-media a:hover {
+  background: #79564A;
+  color: #C2B2A7;
+  text-shadow: 1px 1px 1px #706362;
 }
