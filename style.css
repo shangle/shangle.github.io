@@ -9,19 +9,19 @@ body {
 h1{
   color: #2F2930;
 }
-.social-media > li {
+.contact > li {
   display: inline-block;
   margin: 0 7px;
   list-style: none;
 }
-.social-media a {
+.contact a {
   background: #335577;
   color: #938F8C;
   padding: 20px;
   text-decoration: none;
   transition: all 0.5s ease;
 }
-.social-media a:hover {
+.contact a:hover {
   background: #79564A;
   color: #C2B2A7;
   text-shadow: 1px 1px 1px #706362;
