@@ -42,6 +42,6 @@ body {
 .title li {
   list-style: none;
 }
-.title a, .title:hover {
+.title a, .title a:hover {
           color: #26313C;
         }
