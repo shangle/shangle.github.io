@@ -1,13 +1,32 @@
 @import url(http://fonts.googleapis.com/css?family=Belleza);
 
+* { box-sizing: border-box; }
+
 body {
   background: #C2B2A7;
   font-family: 'Belleza', sans-serif;
   font-size: 3em;
   text-align: center;
+  background: linear-gradient(130deg, #543958 0%,#a06060 25%,#bea27b 50%,#9ca898 75%,#506d8d 100%) no-repeat center center fixed; 
+  background-size: cover;
 }
-h1{
-  color: #2F2930;
+.wrap {
+  max-width: 960px;
+  min-height: 300px;
+  margin: 2em auto;
+  padding: 1em 3em;
+  background: rgba(0,0,0,.5);
+  border-radius: 2px;
+  border: 1px solid rgba(0,0,0,.25);
+  position: relative;
+  color: #ccc;
+  font-family: sans-serif;
+  text-shadow: -1px -1px 15px #111;
+}
+h1 {
+  color: #eee;
+  font-weight: normal;
+  text-align: center;
 }
 .contact > li {
   display: inline-block;
