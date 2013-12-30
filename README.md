@@ -1,4 +1,3 @@
-#shangle
-=========
+#shangle.me
 
-This is a simple test file. Please do not consider this README file complete or accurate.
+This is the readme file for [shangle.me](http://shangle.me). Consider this a signifcant work in progress.
