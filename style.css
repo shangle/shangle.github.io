@@ -10,38 +10,37 @@ body {
   background: linear-gradient(130deg, #543958 0%,#a06060 25%,#bea27b 50%,#9ca898 75%,#506d8d 100%) no-repeat center center fixed; 
   background-size: cover;
 }
-.wrap {
-  max-width: 960px;
-  min-height: 300px;
-  margin: 2em auto;
-  padding: 1em 3em;
-  background: rgba(0,0,0,.5);
-  border-radius: 2px;
-  border: 1px solid rgba(0,0,0,.25);
-  position: relative;
-  color: #ccc;
+
+.title {
+  width: 100%;
+  position: absolute;
+  bottom: 30px;
+  padding: 2em;
+  color: #bbb;
   font-family: sans-serif;
-  text-shadow: -1px -1px 15px #111;
+  border: 1px solid rgba(0,0,0,.25);
+  border-left: none;  border-right: none;
+  background: rgba(0,0,0,.1);
+  box-shadow: 0 5px 10px -5px rgba(0,0,0,.5), inset 5px 5px 100px 1em rgba(0,0,0,.1);
+  display: flex;
+  align-items: center;
 }
-h1 {
-  color: #eee;
-  font-weight: normal;
-  text-align: center;
+@media all and (max-width: 600px) {
+  .title {
+    position: static;
+    flex-direction: column;
+    width: auto;
+    margin: 5px;
+    padding: 1em;
+    border: 1px solid rgba(0,0,0,.25);
+    border-radius: 5px;
+    align-items: stretch;
+  }
 }
-.contact > li {
-  display: inline-block;
-  margin: 0 7px;
+.title h1 {
+  float: left;
+  padding-right: 2em;
+}
+.title li {
   list-style: none;
-}
-.contact a {
-  background: #335577;
-  color: #938F8C;
-  padding: 20px;
-  text-decoration: none;
-  transition: all 0.5s ease;
-}
-.contact a:hover {
-  background: #79564A;
-  color: #C2B2A7;
-  text-shadow: 1px 1px 1px #706362;
 }
