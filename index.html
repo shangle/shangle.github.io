@@ -19,6 +19,11 @@
         margin: 0;
       }
     </style>
+    <script>
+      // https://github.com/filamentgroup/loadCSS/
+      function loadCSS(e,t,n){"use strict";var i=window.document.createElement("link");var o=t||window.document.getElementsByTagName("script")[0];i.rel="stylesheet";i.href=e;i.media="only x";o.parentNode.insertBefore(i,o);setTimeout(function(){i.media=n||"all"})}
+      loadCSS(style.css);
+    </script>
 </head>
 <body>
 	<div class="title">
@@ -31,17 +36,6 @@
 		  <li><a href="http://twitter.com/shangle">twitter</a></li>
         </ul>
   </div>
-  <script>
-      var cb = function() {
-        var l = document.createElement('link'); l.rel = 'stylesheet';
-        l.href = 'style.css';
-        var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
-      };
-      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-          webkitRequestAnimationFrame || msRequestAnimationFrame;
-      if (raf) raf(cb);
-      else window.addEventListener('load', cb);
-  </script>
   <script type="text/javascript">
 
   var _gaq = _gaq || [];
