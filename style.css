@@ -1,10 +1,14 @@
 @import url(http://fonts.googleapis.com/css?family=Exo+2:100);
 
-* {
+html {
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-ms-box-sizing: border-box;
 	box-sizing: border-box;
+}
+
+*,*:before, *:after {
+  box-sizing: inherit;
 }
 
 body {
@@ -68,6 +72,7 @@ body {
 	display: inline-block;
 	font-size: 1.25em;
 	padding: 20px;
+    min-height: 48px;
 	color: #26313C;
 	text-shadow: 0px 0px 1px rgba(0,0,0,.25);
     text-decoration: none;
