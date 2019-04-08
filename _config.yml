@@ -21,25 +21,25 @@ theme_settings:
 
   # Icons
   rss: true  # Make sure you created a feed.xml with feed.xml layout
-  email_address: tim@shangle.me
+  email_address: shangle@gmail.com
   behance:
   bitbucket:
   dribbble:
-  facebook:
+  facebook: http://facebook.com/tim.shangle
   flickr:
   gitlab:
-  github: "sylhare"
+  github: "shangle"
   google_plus:
   instagram:
   keybase:
-  linkedin:  # Full URL
+  linkedin: https://www.linkedin.com/in/tim-shangle-98a55813 # Full URL
   pinterest:
   reddit:
   soundcloud:
   stack_exchange:  # Full URL
   steam:
   tumblr:
-  twitter: # "twitter username"
+  twitter: shangle # "twitter username"
   vimeo:
   wordpress:
   youtube:
