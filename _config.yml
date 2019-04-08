@@ -1,7 +1,7 @@
 # SITE CONFIGURATION
-baseurl: "/Type-on-Strap"
-url: "https://sylhare.github.io"
-title: Type on Strap # site's title
+baseurl: ""
+url: "https://shangle.me"
+title: Tim Shangle
 description: "A website with blog posts and pages" # used by search engines
 
 
