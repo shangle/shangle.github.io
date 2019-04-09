@@ -25,7 +25,7 @@ theme_settings:
   behance:
   bitbucket:
   dribbble:
-  facebook: http://facebook.com/tim.shangle
+  facebook: tim.shangle
   flickr:
   gitlab:
   github: "shangle"
@@ -46,6 +46,7 @@ theme_settings:
   
   # Sharing options
   share_buttons:
+    email: true
     facebook: true
     twitter: true
     google_plus: 
@@ -55,7 +56,7 @@ theme_settings:
     reddit: true
     linkedin: true
     wordpress:
-    email: true
+    
 
   # Scripts / Features 
   google_analytics: "UA-25656575-1"
