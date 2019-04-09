@@ -46,17 +46,16 @@ theme_settings:
   
   # Sharing options
   share_buttons:
-    email: true
     facebook: true
     twitter: true
     google_plus: 
     tumblr:
     pinterest:
     pocket:
-    reddit: true
+    reddit: 
     linkedin: true
     wordpress:
-    
+    email: 
 
   # Scripts / Features 
   google_analytics: "UA-25656575-1"
