@@ -1,9 +1,9 @@
 ---
 layout: page
-title: About
-permalink: /about/
-gradstart: #fff
-gradend: #000
+title: Connect
+permalink: /connect/
+gradstart: "#fff"
+gradend: "#000"
 tags: [About, Archive]
 ---
 
