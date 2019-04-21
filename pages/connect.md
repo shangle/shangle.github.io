@@ -2,8 +2,8 @@
 layout: page
 title: Connect
 permalink: /connect/
-gradstart: "#fff"
-gradend: "#000"
+gradstart: blue
+gradend: red
 tags: [About, Archive]
 ---
 

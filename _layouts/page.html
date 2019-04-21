@@ -3,7 +3,7 @@ layout: default
 ---
 
 <article {% if page.feature-img %}class="feature-image"{% endif %}>
-  <header id="main" style="background: linear-gradient(90deg, {{page.gradstart}}{% unless page.gradstart %}#4b6cb7{% endunless %} 0%, {{page.gradstart}}{% unless page.gradstart %}#182848{% endunless %} 100%); background-image: {% if page.feature-img %}url('{{ page.feature-img | relative_url }}'){% endif %}">
+  <header id="main" style="background: linear-gradient(90deg, {{ page.gradstart }}{% unless page.gradstart %}#4b6cb7{% endunless %} 0%, {{ page.gradend }}{% unless page.gradend %}#182848{% endunless %} 100%); {% if page.feature-img %}background-image: url('{{ page.feature-img | relative_url }}'){% endif %}">
     <h1 id="{{ page.title | default: "" | cgi_escape }}" class="title">
         {{ page.title }}
     </h1>
