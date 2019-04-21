@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<article {% if page.feature-img %}class="feature-image"{% endif %}>
+<article class="feature-image">
   <header id="main" style="background: linear-gradient(90deg, {{ page.gradstart }}{% unless page.gradstart %}#4b6cb7{% endunless %} 0%, {{ page.gradend }}{% unless page.gradend %}#182848{% endunless %} 100%); {% if page.feature-img %}background-image: url('{{ page.feature-img | relative_url }}'){% endif %}">
     <h1 id="{{ page.title | default: "" | cgi_escape }}" class="title">
         {{ page.title }}
