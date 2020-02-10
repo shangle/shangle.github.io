@@ -1,3 +1,3 @@
 # Tim Shangle website
 
-made with amp.
+Placeholder content until I have time...maybe when I retire.
