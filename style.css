@@ -1,0 +1,49 @@
+body {
+  font-family: sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+header {
+  background: #333;
+  color: #fff;
+  padding: 1rem 0;
+  text-align: center;
+}
+header h1 {
+  margin: 0;
+}
+nav {
+  text-align: center;
+  padding: 1rem 0;
+  background: #444;
+}
+nav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+}
+nav a:hover {
+  background: #555;
+}
+main {
+  padding: 1rem;
+  width: 80%;
+  margin: auto;
+  overflow: hidden;
+  background-color: #fff;
+}
+article {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px #ccc dotted;
+}
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #333;
+  color: #fff;
+  margin-top: 1rem;
+}
