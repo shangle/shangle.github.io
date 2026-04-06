@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PixelForge Pro - Animator & Editor</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +16,6 @@
             --zoom: 1;
             --canvas-size: calc(var(--base-canvas-size) * var(--zoom));
             --bg-color: #111827;
-            --panel-color: #1f2937;
         }
 
         body {
@@ -25,16 +24,16 @@
             overflow: hidden;
             touch-action: none;
             user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* Fix Intro.js white-on-white text */
         .introjs-tooltip { color: #111827 !important; background: #f9fafb !important; border-radius: 8px; }
         .introjs-button { color: #111827 !important; text-shadow: none !important; }
 
         .workspace-wrapper {
             width: 100%;
             height: 100%;
-            overflow: auto; /* Allow scrolling when zoomed in */
+            overflow: auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -52,7 +51,7 @@
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            flex-shrink: 0; /* Prevent shrinking when zoomed */
+            flex-shrink: 0;
         }
 
         .canvas-container::after {
@@ -86,26 +85,17 @@
         }
         .tool-btn.active { @apply bg-blue-600 border-blue-400 text-white shadow-lg; }
 
-        .size-btn {
-            @apply w-6 h-6 flex items-center justify-center rounded bg-gray-700 text-xs hover:bg-gray-600 cursor-pointer border border-transparent;
-        }
+        .size-btn { @apply w-6 h-6 flex items-center justify-center rounded bg-gray-700 text-xs hover:bg-gray-600 cursor-pointer border border-transparent; }
         .size-btn.active { @apply bg-blue-500 border-blue-300; }
 
-        /* Timeline / Folders */
-        .folder-group {
-            @apply flex flex-col bg-gray-800 border border-gray-700 rounded-md overflow-hidden min-w-max flex-shrink-0;
-        }
-        .folder-header {
-            @apply bg-gray-700 px-3 py-1 text-xs font-bold flex justify-between items-center text-gray-300 cursor-pointer;
-        }
+        .folder-group { @apply flex flex-col bg-gray-800 border border-gray-700 rounded-md overflow-hidden min-w-max flex-shrink-0; }
+        .folder-header { @apply bg-gray-700 px-3 py-1 text-xs font-bold flex justify-between items-center text-gray-300 cursor-pointer; }
         .folder-header.active-folder { @apply bg-blue-900 text-blue-200 border-b border-blue-500; }
-        
         .folder-frames { @apply flex p-2 gap-2; }
 
         .frame-thumb {
             @apply border-2 border-gray-600 rounded cursor-pointer bg-gray-900 transition-all flex-shrink-0 relative;
-            width: 64px; height: 64px;
-            image-rendering: pixelated;
+            width: 64px; height: 64px; image-rendering: pixelated;
         }
         .frame-thumb.active { @apply border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.8)] scale-105 z-10; }
         .frame-thumb img { width: 100%; height: 100%; object-fit: contain; }
@@ -117,7 +107,6 @@
         #colorSecondary { bottom: 0; right: 0; }
         #colorPrimary { top: 0; left: 0; }
 
-        /* Scrollbars */
         ::-webkit-scrollbar { height: 10px; width: 10px; }
         ::-webkit-scrollbar-track { background: #111827; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; border: 2px solid #111827; }
@@ -126,42 +115,41 @@
 </head>
 <body class="flex flex-col h-screen font-sans antialiased text-sm">
 
+    <!-- Header -->
     <header class="bg-gray-800 border-b border-gray-700 p-2 flex justify-between items-center shadow-md z-30">
         <div class="flex items-center gap-3 px-2">
             <div class="bg-blue-600 p-1.5 rounded-md text-white"><i class="fa-solid fa-cube"></i></div>
             <h1 class="text-lg font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">PixelForge Pro</h1>
         </div>
         
-        <div class="flex items-center gap-3">
-            <!-- Zoom -->
+        <div class="flex items-center gap-3 overflow-x-auto whitespace-nowrap px-2 pb-1 md:pb-0">
             <div class="flex items-center gap-2 bg-gray-900 px-3 py-1 rounded border border-gray-700">
                 <i class="fa-solid fa-magnifying-glass-minus text-xs text-gray-400"></i>
-                <input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1" class="w-24">
+                <input type="range" id="zoomSlider" min="0.5" max="4" step="0.1" value="1" class="w-20 md:w-24">
                 <i class="fa-solid fa-magnifying-glass-plus text-xs text-gray-400"></i>
             </div>
             
             <button id="toggleGridBtn" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition" title="Toggle Grid (G)"><i class="fa-solid fa-border-all"></i> Grid</button>
-            <div class="h-6 w-px bg-gray-600"></div>
+            <div class="h-6 w-px bg-gray-600 hidden md:block"></div>
             
-            <!-- File I/O -->
             <button onclick="saveProject()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition" title="Save .pixel Project"><i class="fa-solid fa-download"></i> Save</button>
             <label class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition cursor-pointer" title="Open .pixel Project">
                 <i class="fa-solid fa-folder-open"></i> Open
                 <input type="file" id="loadProjectInput" accept=".pixel" class="hidden" onchange="loadProject(event)">
             </label>
-            <div class="h-6 w-px bg-gray-600"></div>
+            <div class="h-6 w-px bg-gray-600 hidden md:block"></div>
 
             <button onclick="exportSpriteSheet()" class="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 transition text-white font-medium"><i class="fa-solid fa-file-image"></i> Export Sprite</button>
-            <button onclick="startTutorial()" class="w-8 h-8 rounded-full bg-gray-700 hover:bg-blue-500 transition"><i class="fa-solid fa-question text-xs"></i></button>
         </div>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
         
         <!-- Toolbar -->
-        <aside class="w-16 bg-gray-800 border-r border-gray-700 flex flex-col p-2 gap-2 overflow-y-auto z-20 shadow-xl" data-intro="Select drawing tools. Hover for shortcuts.">
+        <aside class="w-16 bg-gray-800 border-r border-gray-700 flex flex-col p-2 gap-2 overflow-y-auto z-20 shadow-xl" data-intro="Select drawing tools here.">
             <button class="tool-btn active" data-tool="pencil" title="Pencil (P)"><i class="fa-solid fa-pen"></i></button>
             <button class="tool-btn" data-tool="eraser" title="Eraser (E)"><i class="fa-solid fa-eraser"></i></button>
+            <button class="tool-btn" data-tool="picker" title="Color Picker (I)"><i class="fa-solid fa-eye-dropper"></i></button>
             <button class="tool-btn" data-tool="bucket" title="Paint Bucket (B)"><i class="fa-solid fa-fill-drip"></i></button>
             <button class="tool-btn" data-tool="globalfill" title="Replace Color (S)"><i class="fa-solid fa-palette"></i></button>
             <div class="h-px bg-gray-700 my-1"></div>
@@ -173,10 +161,10 @@
             <button class="tool-btn text-purple-400" data-tool="lasso" title="Lasso (A)"><i class="fa-solid fa-lasso"></i></button>
         </aside>
 
-        <!-- Canvas -->
+        <!-- Canvas Workspace -->
         <section class="flex-1 bg-gray-900 relative overflow-hidden flex flex-col" id="workspace">
-            <div class="workspace-wrapper">
-                <div class="canvas-container" id="canvasContainer" data-intro="Draw here. Use Scrollwheel or Top slider to zoom.">
+            <div class="workspace-wrapper" id="workspaceWrapper">
+                <div class="canvas-container" id="canvasContainer">
                     <canvas id="mainCanvas"></canvas>
                     <canvas id="overlayCanvas"></canvas>
                 </div>
@@ -191,10 +179,9 @@
             </div>
         </section>
 
-        <!-- Properties -->
+        <!-- Properties Sidebar -->
         <aside class="w-56 bg-gray-800 border-l border-gray-700 p-4 flex flex-col gap-6 z-20 overflow-y-auto">
-            <!-- Colors -->
-            <div data-intro="Primary and Secondary colors. Press 'X' to swap between them.">
+            <div>
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Colors (X)</h3>
                     <input type="color" id="nativeColorPicker" class="opacity-0 w-0 h-0 absolute">
@@ -207,14 +194,13 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="text-sm font-medium" id="colorHex">#FFFFFF</span>
-                        <span class="text-xs text-gray-500">Double-click slot to edit</span>
+                        <span class="text-[10px] text-gray-500">Double-click to edit</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-6 gap-1" id="palette"></div>
             </div>
 
-            <!-- Brush Size -->
             <div>
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Brush Size</h3>
                 <div class="flex gap-1">
@@ -227,7 +213,6 @@
 
             <div class="h-px bg-gray-700"></div>
 
-            <!-- Modifiers -->
             <div>
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Modifiers</h3>
                 <label class="flex items-center gap-3 mb-2 cursor-pointer group"><input type="checkbox" id="mirrorX" class="accent-blue-500"> Mirror X</label>
@@ -236,86 +221,70 @@
             </div>
             
             <div class="mt-auto pt-4 border-t border-gray-700 text-[11px] text-gray-500 leading-relaxed">
-                <p><strong>Shortcuts:</strong></p>
-                <p>Shift+D: Dup Frame | N: New</p>
-                <p>X: Swap Colors | Z: Undo</p>
-                <p>Shift: Constrain Shapes</p>
+                <p><strong>Keys:</strong></p>
+                <p>Shift+D: Dup | N: New</p>
+                <p>X: Swap | Z: Undo | I: Pick</p>
             </div>
         </aside>
     </main>
 
-    <!-- Timeline (Folders & Frames) -->
+    <!-- Timeline Footer -->
     <footer class="h-40 bg-gray-800 border-t border-gray-700 flex flex-col z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
         <div class="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-gray-900/50">
             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Animations / Folders</span>
             <div class="flex gap-2">
-                <button onclick="addFolder()" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs transition"><i class="fa-solid fa-folder-plus"></i> New Folder</button>
-                <button onclick="addNewFrame()" class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-xs transition"><i class="fa-solid fa-plus"></i> New Frame</button>
-                <button onclick="duplicateFrame()" class="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs transition"><i class="fa-solid fa-copy"></i> Dup Frame</button>
-                <button onclick="deleteFrame()" class="px-3 py-1 rounded bg-red-600 hover:bg-red-500 text-xs transition"><i class="fa-solid fa-trash"></i> Del Frame</button>
+                <button onclick="addFolder()" class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs transition hidden sm:block"><i class="fa-solid fa-folder-plus"></i> New Folder</button>
+                <button onclick="addNewFrame()" class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-xs transition"><i class="fa-solid fa-plus"></i> Frame</button>
+                <button onclick="duplicateFrame()" class="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs transition"><i class="fa-solid fa-copy"></i> Dup</button>
+                <button onclick="deleteFrame()" class="px-3 py-1 rounded bg-red-600 hover:bg-red-500 text-xs transition"><i class="fa-solid fa-trash"></i> Del</button>
             </div>
         </div>
-        <div id="timeline" class="flex-1 flex items-start px-4 py-2 gap-4 overflow-x-auto" data-intro="Group frames into Folders! Playback and exporting only affect the currently active folder.">
-            <!-- Populated by JS -->
-        </div>
+        <div id="timeline" class="flex-1 flex items-start px-4 py-2 gap-4 overflow-x-auto"></div>
     </footer>
 
     <script>
-        // --- Configuration & Initialization ---
-        const RES = 32;
+        // --- Core Variables ---
+        const RES = 32; // Internal logic resolution
         const PALETTE = [
             '#000000', '#1a1c2c', '#5d275d', '#b13e53', '#ef7d57', '#ffcd75', '#a7f070', '#38b764',
             '#257179', '#29366f', '#3b5dc9', '#41a6f6', '#73eff7', '#f4f4f4', '#94b0c2', '#566c86', '#333c57'
         ];
 
         let state = {
-            folders: [], // { id, name, frames: [ {id, data: ImageData} ] }
-            activeFolderId: null,
-            activeFrameId: null,
-            
-            tool: 'pencil',
-            brushSize: 1,
+            folders: [], activeFolderId: null, activeFrameId: null,
+            tool: 'pencil', brushSize: 1,
             colors: { primary: { hex: '#ffffff', r:255, g:255, b:255, a:255 }, secondary: { hex: '#000000', r:0, g:0, b:0, a:255 } },
             activeColorSlot: 'primary',
-            
-            isDrawing: false,
-            mirrorX: false, mirrorY: false, onionSkin: true,
-            isPlaying: false, fps: 12, playInterval: null,
-            
-            history: [], // Stack for Undo
+            isDrawing: false, mirrorX: false, mirrorY: false, onionSkin: true,
+            isPlaying: false, fps: 12, playInterval: null, history: [],
             selection: { active: false, isFloating: false, startX: 0, startY: 0, floatX: 0, floatY: 0, data: null, path: [] }
         };
 
         const dom = {
             mainCanvas: document.getElementById('mainCanvas'),
             overlayCanvas: document.getElementById('overlayCanvas'),
-            palette: document.getElementById('palette'),
             timeline: document.getElementById('timeline'),
-            colorSecondary: document.getElementById('colorSecondary'),
-            colorPrimary: document.getElementById('colorPrimary'),
-            colorHex: document.getElementById('colorHex'),
-            nativePicker: document.getElementById('nativeColorPicker')
+            palette: document.getElementById('palette')
         };
+
+        // Fix logic mapping: WE MUST SET INTERNAL CANVAS SIZE
+        dom.mainCanvas.width = RES;
+        dom.mainCanvas.height = RES;
+        dom.overlayCanvas.width = RES;
+        dom.overlayCanvas.height = RES;
 
         const ctxMain = dom.mainCanvas.getContext('2d', { willReadFrequently: true });
         const ctxOverlay = dom.overlayCanvas.getContext('2d', { willReadFrequently: true });
 
-        // --- Utils & State Helpers ---
-        function generateId() { return Math.random().toString(36).substr(2, 9); }
-        function hexToRgba(hex) {
-            const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-            return { hex, r, g, b, a: 255 };
-        }
-        function getActiveColor() { return state.colors[state.activeColorSlot]; }
-        
-        function getActiveFolder() { return state.folders.find(f => f.id === state.activeFolderId); }
-        function getActiveFrameIndex(folder) { return folder.frames.findIndex(f => f.id === state.activeFrameId); }
-        function getActiveFrame() { 
-            const folder = getActiveFolder(); 
-            return folder ? folder.frames.find(f => f.id === state.activeFrameId) : null; 
-        }
+        // --- Utils ---
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const hexToRgba = (hex) => ({ hex, r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16), a: 255 });
+        const getActiveColor = () => state.colors[state.activeColorSlot];
+        const getActiveFolder = () => state.folders.find(f => f.id === state.activeFolderId);
+        const getActiveFrameIndex = (fol) => fol.frames.findIndex(f => f.id === state.activeFrameId);
+        const getActiveFrame = () => { const fol = getActiveFolder(); return fol ? fol.frames.find(f => f.id === state.activeFrameId) : null; };
 
-        // --- Core Pixel Logic ---
+        // --- Pixels & Math ---
         function getPixel(imgData, x, y) {
             if (x < 0 || x >= RES || y < 0 || y >= RES) return null;
             const i = (y * RES + x) * 4;
@@ -336,11 +305,8 @@
             const offset = Math.floor(state.brushSize / 2);
             for(let i=0; i<state.brushSize; i++) {
                 for(let j=0; j<state.brushSize; j++) {
-                    let px = x - offset + i;
-                    let py = y - offset + j;
-                    // For even brush sizes, shift slightly to align better visually with grid
-                    if(state.brushSize % 2 === 0) { px = x + i; py = y + j; }
-                    
+                    let px = x - offset + i, py = y - offset + j;
+                    if(state.brushSize % 2 === 0) { px = x + i; py = y + j; } // Grid alignment for evens
                     setPixel(imgData, px, py, c);
                     if (state.mirrorX) setPixel(imgData, RES - 1 - px, py, c);
                     if (state.mirrorY) setPixel(imgData, px, RES - 1 - py, c);
@@ -349,7 +315,6 @@
             }
         }
 
-        // Geometric Math (Strictly Integer/Pixel based)
         function bresenhamLine(imgData, x0, y0, x1, y1, c) {
             let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
             let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -364,25 +329,19 @@
         }
 
         function drawRect(imgData, x0, y0, x1, y1, c) {
-            const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
-            const minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
-            bresenhamLine(imgData, minX, minY, maxX, minY, c); // Top
-            bresenhamLine(imgData, minX, maxY, maxX, maxY, c); // Bottom
-            bresenhamLine(imgData, minX, minY, minX, maxY, c); // Left
-            bresenhamLine(imgData, maxX, minY, maxX, maxY, c); // Right
+            const minX = Math.min(x0, x1), maxX = Math.max(x0, x1), minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
+            bresenhamLine(imgData, minX, minY, maxX, minY, c); bresenhamLine(imgData, minX, maxY, maxX, maxY, c);
+            bresenhamLine(imgData, minX, minY, minX, maxY, c); bresenhamLine(imgData, maxX, minY, maxX, maxY, c);
         }
 
         function drawEllipseBresenham(imgData, x0, y0, x1, y1, c) {
-            // Integer Bresenham algorithm for perfect 1px thick ellipse
             let a = Math.abs(x1 - x0), b = Math.abs(y1 - y0), b1 = b & 1;
             let dx = 4 * (1 - a) * b * b, dy = 4 * (b1 + 1) * a * a;
             let err = dx + dy + b1 * a * a, e2;
-
             if (x0 > x1) { x0 = x1; x1 += a; }
             if (y0 > y1) y0 = y1;
             y0 += (b + 1) >> 1; y1 = y0 - b1;
             a *= 8 * a; b1 = 8 * b * b;
-
             do {
                 drawBrush(imgData, x1, y0, c); drawBrush(imgData, x0, y0, c);
                 drawBrush(imgData, x0, y1, c); drawBrush(imgData, x1, y1, c);
@@ -390,7 +349,6 @@
                 if (e2 <= dy) { y0++; y1--; err += dy += a; }
                 if (e2 >= dx || 2 * err > dy) { x0++; x1--; err += dx += b1; }
             } while (x0 <= x1);
-
             while (y0 - y1 < b) {
                 drawBrush(imgData, x0 - 1, y0, c); drawBrush(imgData, x1 + 1, y0++, c);
                 drawBrush(imgData, x0 - 1, y1, c); drawBrush(imgData, x1 + 1, y1--, c);
@@ -405,29 +363,38 @@
                 const [x, y] = stack.pop();
                 const p = getPixel(imgData, x, y);
                 if (p && p.r === startNode.r && p.g === startNode.g && p.b === startNode.b && p.a === startNode.a) {
-                    setPixel(imgData, x, y, targetColor); // fill disregards brush size and mirror for now
-                    if (x > 0) stack.push([x - 1, y]);
-                    if (x < RES - 1) stack.push([x + 1, y]);
-                    if (y > 0) stack.push([x, y - 1]);
-                    if (y < RES - 1) stack.push([x, y + 1]);
+                    setPixel(imgData, x, y, targetColor);
+                    if (x > 0) stack.push([x - 1, y]); if (x < RES - 1) stack.push([x + 1, y]);
+                    if (y > 0) stack.push([x, y - 1]); if (y < RES - 1) stack.push([x, y + 1]);
                 }
             }
         }
 
-        // --- Interaction Logic ---
+        // --- Mouse & Touch Input (Robust Mapping) ---
         let startX, startY, lastX, lastY;
+
         function getMouseCoords(e) {
             const rect = dom.mainCanvas.getBoundingClientRect();
-            // Critical fix for scale and padding offsets: Use percentage of bounding box
+            let clientX = e.clientX, clientY = e.clientY;
+            
+            // Handle touch events
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY;
+            }
+
+            // Map purely by percentage across bounding rect width/height
             const scaleX = RES / rect.width;
             const scaleY = RES / rect.height;
-            let x = Math.floor((e.clientX - rect.left) * scaleX);
-            let y = Math.floor((e.clientY - rect.top) * scaleY);
+            let x = Math.floor((clientX - rect.left) * scaleX);
+            let y = Math.floor((clientY - rect.top) * scaleY);
+            
             return { x: Math.max(0, Math.min(RES - 1, x)), y: Math.max(0, Math.min(RES - 1, y)) };
         }
 
-        function handleMouseDown(e) {
-            if (state.isPlaying || e.button !== 0) return; // Only left click
+        function handleDown(e) {
+            if (state.isPlaying || (e.button !== undefined && e.button !== 0)) return;
             const { x, y } = getMouseCoords(e);
             startX = x; startY = y; lastX = x; lastY = y;
             state.isDrawing = true;
@@ -435,18 +402,25 @@
             const imgData = ctxMain.getImageData(0, 0, RES, RES);
             const activeC = getActiveColor();
 
+            if (state.tool === 'picker') {
+                const p = getPixel(imgData, x, y);
+                if (p && p.a > 0) {
+                    const hex = "#" + (1 << 24 | p.r << 16 | p.g << 8 | p.b).toString(16).slice(1).toUpperCase();
+                    setColor(hex);
+                }
+                state.isDrawing = false; return;
+            }
+
             if (state.selection.isFloating) {
                 if (x >= state.selection.floatX && x < state.selection.floatX + state.selection.data.width &&
-                    y >= state.selection.floatY && y < state.selection.floatY + state.selection.data.height) return; // Dragging
+                    y >= state.selection.floatY && y < state.selection.floatY + state.selection.data.height) return;
                 commitSelection();
             }
 
             if (['pencil', 'eraser'].includes(state.tool)) {
-                drawBrush(imgData, x, y, activeC);
-                putImageData(imgData);
+                drawBrush(imgData, x, y, activeC); putImageData(imgData);
             } else if (state.tool === 'bucket') {
-                floodFill(imgData, x, y, activeC);
-                putImageData(imgData); state.isDrawing = false; saveHistory();
+                floodFill(imgData, x, y, activeC); putImageData(imgData); state.isDrawing = false; saveHistory();
             } else if (state.tool === 'globalfill') {
                 const clickedCol = getPixel(imgData, x, y);
                 if (clickedCol) {
@@ -466,7 +440,7 @@
             renderOverlay();
         }
 
-        function handleMouseMove(e) {
+        function handleMove(e) {
             if (!state.isDrawing || state.isPlaying) return;
             let { x, y } = getMouseCoords(e);
             
@@ -514,7 +488,7 @@
             }
         }
 
-        function handleMouseUp(e) {
+        function handleUp(e) {
             if (!state.isDrawing || state.isPlaying) return;
             state.isDrawing = false;
             let { x, y } = getMouseCoords(e);
@@ -525,7 +499,6 @@
             }
 
             if (state.selection.isFloating) return;
-
             const imgData = ctxMain.getImageData(0, 0, RES, RES);
             const activeC = getActiveColor();
 
@@ -536,14 +509,16 @@
                 putImageData(imgData); ctxOverlay.clearRect(0, 0, RES, RES); saveHistory();
             } else if (['pencil', 'eraser'].includes(state.tool)) {
                 saveHistory();
-            } else if (state.tool === 'marquee') extractSelectionRect(startX, startY, x, y);
-            else if (state.tool === 'lasso') extractSelectionLasso();
+            } else if (state.tool === 'marquee') {
+                extractSelectionRect(startX, startY, x, y);
+            } else if (state.tool === 'lasso') {
+                extractSelectionLasso();
+            }
             
-            renderOverlay();
-            autoSave();
+            renderOverlay(); autoSave();
         }
 
-        // --- Selections (Abridged core logic) ---
+        // --- Selections ---
         function extractSelectionRect(x0, y0, x1, y1) {
             const minX = Math.min(x0, x1), maxX = Math.max(x0, x1), minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
             const w = maxX - minX + 1, h = maxY - minY + 1;
@@ -554,14 +529,46 @@
                 for(let px=0; px<w; px++) {
                     let mx = minX + px, my = minY + py, mIdx = (my * RES + mx) * 4, sIdx = (py * w + px) * 4;
                     selData.data.set(mainData.data.subarray(mIdx, mIdx+4), sIdx);
-                    mainData.data[mIdx+3] = 0; // Erase main
+                    mainData.data[mIdx+3] = 0; 
                 }
             }
             putImageData(mainData);
             state.selection = { active: true, isFloating: true, floatX: minX, floatY: minY, data: selData, path: [] };
             saveHistory();
         }
-        function extractSelectionLasso() { /* Skipping lasso math for brevity, logic identical to previous */ clearSelection(); }
+
+        function extractSelectionLasso() {
+            if(state.selection.path.length < 3) { clearSelection(); return; }
+            
+            const maskCanvas = document.createElement('canvas'); maskCanvas.width = RES; maskCanvas.height = RES;
+            const mCtx = maskCanvas.getContext('2d');
+            mCtx.beginPath(); mCtx.moveTo(state.selection.path[0].x, state.selection.path[0].y);
+            state.selection.path.forEach(p => mCtx.lineTo(p.x, p.y)); mCtx.closePath();
+            mCtx.fillStyle = 'white'; mCtx.fill();
+            
+            const maskData = mCtx.getImageData(0,0,RES,RES);
+            const mainData = ctxMain.getImageData(0,0,RES,RES);
+            
+            let minX=RES, minY=RES, maxX=0, maxY=0;
+            state.selection.path.forEach(p => { minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); });
+            const w = maxX - minX + 1, h = maxY - minY + 1;
+            if (w <= 0 || h <= 0) { clearSelection(); return; }
+
+            const selData = ctxMain.createImageData(w, h);
+            for(let y=0; y<RES; y++) {
+                for(let x=0; x<RES; x++) {
+                    let idx = (y * RES + x) * 4;
+                    if(maskData.data[idx+3] > 0) { // If pixel is inside freehand polygon
+                        let sIdx = ((y - minY) * w + (x - minX)) * 4;
+                        selData.data.set(mainData.data.subarray(idx, idx+4), sIdx);
+                        mainData.data[idx+3] = 0; 
+                    }
+                }
+            }
+            putImageData(mainData);
+            state.selection = { active: true, isFloating: true, floatX: minX, floatY: minY, data: selData, path: [] };
+            saveHistory();
+        }
         
         function commitSelection() {
             if (!state.selection.isFloating) return;
@@ -582,19 +589,15 @@
         }
         function clearSelection() { state.selection = { active: false, isFloating: false, data: null, path: [] }; renderOverlay(); }
 
-        // --- Render Sync ---
+        // --- View & Sync ---
         function putImageData(data) {
             ctxMain.putImageData(data, 0, 0);
             const frame = getActiveFrame();
-            if (frame) {
-                frame.data = ctxMain.getImageData(0, 0, RES, RES);
-                updateThumb(frame.id);
-            }
+            if (frame) { frame.data = ctxMain.getImageData(0, 0, RES, RES); updateThumb(frame.id); }
         }
 
         function renderOverlayBase() {
-            const folder = getActiveFolder();
-            if (!folder) return;
+            const folder = getActiveFolder(); if (!folder) return;
             const idx = getActiveFrameIndex(folder);
             
             if (state.onionSkin && idx > 0 && !state.isPlaying) {
@@ -602,135 +605,89 @@
                     ctxOverlay.clearRect(0,0,RES,RES);
                     ctxOverlay.globalAlpha = 0.3; ctxOverlay.drawImage(bmp, 0, 0); ctxOverlay.globalAlpha = 1.0;
                     if(state.selection.isFloating) {
-                        const tempCanvas = document.createElement('canvas'); tempCanvas.width = state.selection.data.width; tempCanvas.height = state.selection.data.height;
-                        tempCanvas.getContext('2d').putImageData(state.selection.data, 0, 0);
-                        ctxOverlay.drawImage(tempCanvas, state.selection.floatX, state.selection.floatY);
+                        const tc = document.createElement('canvas'); tc.width = state.selection.data.width; tc.height = state.selection.data.height;
+                        tc.getContext('2d').putImageData(state.selection.data, 0, 0); ctxOverlay.drawImage(tc, state.selection.floatX, state.selection.floatY);
                     }
                 });
             } else if(state.selection.isFloating) {
-                const tempCanvas = document.createElement('canvas'); tempCanvas.width = state.selection.data.width; tempCanvas.height = state.selection.data.height;
-                tempCanvas.getContext('2d').putImageData(state.selection.data, 0, 0);
-                ctxOverlay.drawImage(tempCanvas, state.selection.floatX, state.selection.floatY);
+                const tc = document.createElement('canvas'); tc.width = state.selection.data.width; tc.height = state.selection.data.height;
+                tc.getContext('2d').putImageData(state.selection.data, 0, 0); ctxOverlay.drawImage(tc, state.selection.floatX, state.selection.floatY);
             }
         }
         function renderOverlay() { ctxOverlay.clearRect(0, 0, RES, RES); renderOverlayBase(); }
 
-        // --- Folders & Frames ---
+        // --- Folders & Timeline ---
         function addFolder(name = "Animation") {
-            const newFolder = { id: generateId(), name: name + " " + (state.folders.length + 1), frames: [] };
-            state.folders.push(newFolder);
-            state.activeFolderId = newFolder.id;
-            addNewFrame(); // Also adds a frame
-            renderTimelineUI();
-            autoSave();
+            const f = { id: generateId(), name: name + " " + (state.folders.length + 1), frames: [] };
+            state.folders.push(f); state.activeFolderId = f.id; addNewFrame(); renderTimelineUI(); autoSave();
         }
 
         function addNewFrame(data = null) {
             commitSelection();
             if (!state.folders.length) { addFolder(); return; }
-            
-            const folder = getActiveFolder();
-            const newFrame = { id: generateId(), data: data ? new ImageData(new Uint8ClampedArray(data.data), RES, RES) : ctxMain.createImageData(RES, RES) };
-            
-            const idx = getActiveFrameIndex(folder);
-            folder.frames.splice(idx + 1, 0, newFrame);
-            state.activeFrameId = newFrame.id;
-            
-            loadFrame(newFrame.id);
-            renderTimelineUI();
-            autoSave();
+            const fol = getActiveFolder();
+            const nf = { id: generateId(), data: data ? new ImageData(new Uint8ClampedArray(data.data), RES, RES) : ctxMain.createImageData(RES, RES) };
+            const idx = getActiveFrameIndex(fol); fol.frames.splice(idx + 1, 0, nf); state.activeFrameId = nf.id;
+            loadFrame(nf.id); renderTimelineUI(); autoSave();
         }
         
         function duplicateFrame() { const f = getActiveFrame(); if(f) addNewFrame(f.data); }
         
         function deleteFrame() {
-            const folder = getActiveFolder();
-            if (!folder) return;
-            const idx = getActiveFrameIndex(folder);
-            commitSelection();
-            
-            folder.frames.splice(idx, 1);
-            if (folder.frames.length === 0) {
-                // Delete folder if empty
-                state.folders = state.folders.filter(f => f.id !== folder.id);
-                if (state.folders.length) {
-                    state.activeFolderId = state.folders[0].id;
-                    state.activeFrameId = state.folders[0].frames[0].id;
-                } else {
-                    addFolder(); return;
-                }
-            } else {
-                state.activeFrameId = folder.frames[Math.max(0, idx - 1)].id;
-            }
-            loadFrame(state.activeFrameId);
-            renderTimelineUI();
-            autoSave();
+            const fol = getActiveFolder(); if (!fol) return;
+            const idx = getActiveFrameIndex(fol); commitSelection();
+            fol.frames.splice(idx, 1);
+            if (fol.frames.length === 0) {
+                state.folders = state.folders.filter(f => f.id !== fol.id);
+                if (state.folders.length) { state.activeFolderId = state.folders[0].id; state.activeFrameId = state.folders[0].frames[0].id; } 
+                else { addFolder(); return; }
+            } else { state.activeFrameId = fol.frames[Math.max(0, idx - 1)].id; }
+            loadFrame(state.activeFrameId); renderTimelineUI(); autoSave();
         }
 
         function loadFrame(frameId) {
-            // Find which folder owns this frame
-            let foundFolder = null, foundFrame = null;
-            for(let fol of state.folders) {
-                let fr = fol.frames.find(f => f.id === frameId);
-                if (fr) { foundFolder = fol; foundFrame = fr; break; }
-            }
-            if(!foundFrame) return;
-
-            state.activeFolderId = foundFolder.id;
-            state.activeFrameId = frameId;
-            ctxMain.putImageData(foundFrame.data, 0, 0);
-            
-            saveHistory(); // Start fresh history stack on new frame
-            renderOverlay();
-            renderTimelineUI(); // updates active classes
+            let foundFol = null, foundFr = null;
+            for(let fol of state.folders) { let fr = fol.frames.find(f => f.id === frameId); if (fr) { foundFol = fol; foundFr = fr; break; } }
+            if(!foundFr) return;
+            state.activeFolderId = foundFol.id; state.activeFrameId = frameId;
+            ctxMain.putImageData(foundFr.data, 0, 0);
+            saveHistory(); renderOverlay(); renderTimelineUI();
         }
 
-        function updateThumb(frameId) {
-            const img = document.getElementById(`thumb-${frameId}`);
-            if (img) img.src = dom.mainCanvas.toDataURL();
-        }
+        function updateThumb(frameId) { const img = document.getElementById(`thumb-${frameId}`); if (img) img.src = dom.mainCanvas.toDataURL(); }
 
         function renderTimelineUI() {
             dom.timeline.innerHTML = '';
             state.folders.forEach(fol => {
                 const group = document.createElement('div'); group.className = 'folder-group';
-                
                 const header = document.createElement('div'); 
                 header.className = `folder-header ${fol.id === state.activeFolderId ? 'active-folder' : ''}`;
-                header.innerHTML = `<span><i class="fa-solid fa-folder-open text-yellow-500 mr-2"></i>${fol.name}</span> <span class="text-[10px] opacity-50">${fol.frames.length} frames</span>`;
+                header.innerHTML = `<span><i class="fa-solid fa-folder-open text-yellow-500 mr-2"></i>${fol.name}</span> <span class="text-[10px] opacity-50">${fol.frames.length}</span>`;
                 header.onclick = () => { if(fol.frames.length) loadFrame(fol.frames[0].id); };
                 
                 const framesCont = document.createElement('div'); framesCont.className = 'folder-frames';
                 fol.frames.forEach((fr, i) => {
-                    const thumb = document.createElement('div');
-                    thumb.className = `frame-thumb ${fr.id === state.activeFrameId ? 'active' : ''}`;
+                    const thumb = document.createElement('div'); thumb.className = `frame-thumb ${fr.id === state.activeFrameId ? 'active' : ''}`;
                     thumb.onclick = (e) => { e.stopPropagation(); loadFrame(fr.id); };
-                    
                     const num = document.createElement('div'); num.className = 'frame-number'; num.innerText = i + 1;
                     const img = document.createElement('img'); img.id = `thumb-${fr.id}`;
-                    
                     const tmp = document.createElement('canvas'); tmp.width = RES; tmp.height = RES;
                     tmp.getContext('2d').putImageData(fr.data, 0, 0); img.src = tmp.toDataURL();
-
                     thumb.appendChild(num); thumb.appendChild(img); framesCont.appendChild(thumb);
                 });
-                
-                group.appendChild(header); group.appendChild(framesCont);
-                dom.timeline.appendChild(group);
+                group.appendChild(header); group.appendChild(framesCont); dom.timeline.appendChild(group);
             });
         }
 
-        // --- History / Save / Load ---
+        // --- Save, Load & Setup ---
         function saveHistory() {
-            const f = getActiveFrame();
-            if(!f) return;
+            const f = getActiveFrame(); if(!f) return;
             state.history.push({ frameId: f.id, data: new ImageData(new Uint8ClampedArray(f.data.data), RES, RES) });
             if (state.history.length > 20) state.history.shift();
         }
         function undo() {
             if (state.history.length > 1) {
-                state.history.pop();
-                const prev = state.history[state.history.length - 1];
+                state.history.pop(); const prev = state.history[state.history.length - 1];
                 if (prev.frameId === state.activeFrameId) putImageData(new ImageData(new Uint8ClampedArray(prev.data.data), RES, RES));
                 renderOverlay(); autoSave();
             }
@@ -739,115 +696,51 @@
         function getSaveData() {
             return {
                 colors: state.colors, activeColorSlot: state.activeColorSlot,
-                folders: state.folders.map(fol => ({
-                    id: fol.id, name: fol.name,
-                    frames: fol.frames.map(fr => ({
-                        id: fr.id, 
-                        // Convert ImageData back to standard array for JSON
-                        data: Array.from(fr.data.data) 
-                    }))
-                }))
+                folders: state.folders.map(fol => ({ id: fol.id, name: fol.name, frames: fol.frames.map(fr => ({ id: fr.id, data: Array.from(fr.data.data) })) }))
             };
         }
-
-        function autoSave() {
-            localStorage.setItem('pixelForge_autoSave', JSON.stringify(getSaveData()));
-        }
-
+        function autoSave() { localStorage.setItem('pixelForge_autoSave', JSON.stringify(getSaveData())); }
         function restoreFromData(data) {
-            state.colors = data.colors;
-            state.activeColorSlot = data.activeColorSlot || 'primary';
-            selectColorSlot(state.activeColorSlot);
-            
-            state.folders = data.folders.map(fol => ({
-                id: fol.id, name: fol.name,
-                frames: fol.frames.map(fr => ({
-                    id: fr.id,
-                    data: new ImageData(new Uint8ClampedArray(fr.data), RES, RES)
-                }))
-            }));
-            
-            if(state.folders.length && state.folders[0].frames.length) {
-                loadFrame(state.folders[0].frames[0].id);
-            } else {
-                addFolder();
-            }
+            state.colors = data.colors; selectColorSlot(data.activeColorSlot || 'primary');
+            state.folders = data.folders.map(fol => ({ id: fol.id, name: fol.name, frames: fol.frames.map(fr => ({ id: fr.id, data: new ImageData(new Uint8ClampedArray(fr.data), RES, RES) })) }));
+            if(state.folders.length && state.folders[0].frames.length) loadFrame(state.folders[0].frames[0].id); else addFolder();
         }
 
         function saveProject() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getSaveData()));
             const a = document.createElement('a'); a.href = dataStr; a.download = `project-${Date.now()}.pixel`; a.click();
         }
-
         function loadProject(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try { restoreFromData(JSON.parse(e.target.result)); } 
-                catch (err) { alert("Invalid .pixel file"); }
-            };
-            reader.readAsText(file);
-        }
-
-        // --- Colors & UI Setup ---
-        function initColors() {
-            PALETTE.forEach(c => {
-                const btn = document.createElement('button');
-                btn.className = 'w-6 h-6 rounded hover:scale-110 transition border border-gray-600';
-                btn.style.backgroundColor = c;
-                btn.onclick = () => setColor(c);
-                dom.palette.appendChild(btn);
-            });
-            
-            dom.nativePicker.addEventListener('input', (e) => setColor(e.target.value));
-            updateColorUI();
+            const f = e.target.files[0]; if (!f) return; const reader = new FileReader();
+            reader.onload = (e) => { try { restoreFromData(JSON.parse(e.target.result)); } catch (err) { alert("Invalid .pixel file"); } }; reader.readAsText(f);
         }
 
         function selectColorSlot(slot) {
             state.activeColorSlot = slot;
-            dom.colorPrimary.classList.toggle('active', slot === 'primary');
-            dom.colorPrimary.classList.toggle('inactive', slot !== 'primary');
-            dom.colorSecondary.classList.toggle('active', slot === 'secondary');
-            dom.colorSecondary.classList.toggle('inactive', slot !== 'secondary');
-            
-            dom.colorPrimary.style.zIndex = slot === 'primary' ? '10' : '0';
-            dom.colorSecondary.style.zIndex = slot === 'secondary' ? '10' : '0';
-            
-            dom.colorHex.innerText = state.colors[slot].hex.toUpperCase();
+            document.getElementById('colorPrimary').classList.toggle('active', slot === 'primary');
+            document.getElementById('colorPrimary').classList.toggle('inactive', slot !== 'primary');
+            document.getElementById('colorSecondary').classList.toggle('active', slot === 'secondary');
+            document.getElementById('colorSecondary').classList.toggle('inactive', slot !== 'secondary');
+            document.getElementById('colorPrimary').style.zIndex = slot === 'primary' ? '10' : '0';
+            document.getElementById('colorSecondary').style.zIndex = slot === 'secondary' ? '10' : '0';
+            document.getElementById('colorHex').innerText = state.colors[slot].hex.toUpperCase();
         }
 
-        function setColor(hex) {
-            state.colors[state.activeColorSlot] = hexToRgba(hex);
-            updateColorUI(); autoSave();
-        }
-
+        function setColor(hex) { state.colors[state.activeColorSlot] = hexToRgba(hex); updateColorUI(); autoSave(); }
         function updateColorUI() {
-            dom.colorPrimary.style.backgroundColor = state.colors.primary.hex;
-            dom.colorSecondary.style.backgroundColor = state.colors.secondary.hex;
-            dom.colorHex.innerText = state.colors[state.activeColorSlot].hex.toUpperCase();
+            document.getElementById('colorPrimary').style.backgroundColor = state.colors.primary.hex;
+            document.getElementById('colorSecondary').style.backgroundColor = state.colors.secondary.hex;
+            document.getElementById('colorHex').innerText = state.colors[state.activeColorSlot].hex.toUpperCase();
         }
+        function openPicker(slot) { selectColorSlot(slot); document.getElementById('nativeColorPicker').value = state.colors[slot].hex; document.getElementById('nativeColorPicker').click(); }
 
-        function openPicker(slot) {
-            selectColorSlot(slot);
-            dom.nativePicker.value = state.colors[slot].hex;
-            dom.nativePicker.click();
-        }
-
-        // --- Playback & Export ---
         function togglePlayback() {
-            const folder = getActiveFolder();
-            if(!folder || folder.frames.length < 2) return;
-
-            state.isPlaying = !state.isPlaying;
-            commitSelection();
+            const fol = getActiveFolder(); if(!fol || fol.frames.length < 2) return;
+            state.isPlaying = !state.isPlaying; commitSelection();
             if (state.isPlaying) {
                 document.getElementById('playBtn').innerHTML = '<i class="fa-solid fa-pause"></i>';
-                let idx = getActiveFrameIndex(folder);
-                state.playInterval = setInterval(() => {
-                    idx = (idx + 1) % folder.frames.length;
-                    loadFrame(folder.frames[idx].id);
-                }, 1000 / state.fps);
+                let idx = getActiveFrameIndex(fol);
+                state.playInterval = setInterval(() => { idx = (idx + 1) % fol.frames.length; loadFrame(fol.frames[idx].id); }, 1000 / state.fps);
             } else {
                 document.getElementById('playBtn').innerHTML = '<i class="fa-solid fa-play"></i>';
                 clearInterval(state.playInterval); renderOverlay();
@@ -855,31 +748,27 @@
         }
 
         function exportSpriteSheet() {
-            const folder = getActiveFolder(); if(!folder) return;
-            commitSelection();
-            const canvas = document.createElement('canvas');
-            canvas.width = RES * folder.frames.length; canvas.height = RES;
+            const fol = getActiveFolder(); if(!fol) return; commitSelection();
+            const canvas = document.createElement('canvas'); canvas.width = RES * fol.frames.length; canvas.height = RES;
             const ctx = canvas.getContext('2d');
-            folder.frames.forEach((fr, i) => {
-                const t = document.createElement('canvas'); t.width = RES; t.height = RES;
-                t.getContext('2d').putImageData(fr.data, 0, 0); ctx.drawImage(t, i * RES, 0);
-            });
-            const link = document.createElement('a'); link.download = `${folder.name.replace(/\s+/g,'_')}_sheet.png`;
-            link.href = canvas.toDataURL('image/png'); link.click();
+            fol.frames.forEach((fr, i) => { const t = document.createElement('canvas'); t.width = RES; t.height = RES; t.getContext('2d').putImageData(fr.data, 0, 0); ctx.drawImage(t, i * RES, 0); });
+            const link = document.createElement('a'); link.download = `${fol.name.replace(/\s+/g,'_')}_sheet.png`; link.href = canvas.toDataURL('image/png'); link.click();
         }
 
         function setupListeners() {
-            const cWrap = document.getElementById('canvasContainer');
-            cWrap.addEventListener('mousedown', handleMouseDown);
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+            const cw = document.getElementById('canvasContainer');
+            // Mouse
+            cw.addEventListener('mousedown', handleDown); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleUp);
+            // Touch
+            cw.addEventListener('touchstart', (e) => { e.preventDefault(); handleDown(e); }, {passive: false});
+            window.addEventListener('touchmove', (e) => { if(state.isDrawing) e.preventDefault(); handleMove(e); }, {passive: false});
+            window.addEventListener('touchend', (e) => { handleUp(e); }, {passive: false});
             
             document.querySelectorAll('.tool-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    commitSelection();
-                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    commitSelection(); document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active'); state.tool = btn.dataset.tool;
-                    dom.mainCanvas.style.cursor = ['marquee', 'lasso'].includes(state.tool) ? 'crosshair' : 'default';
+                    dom.mainCanvas.style.cursor = ['marquee', 'lasso'].includes(state.tool) ? 'crosshair' : (state.tool === 'picker' ? 'alias' : 'default');
                 });
             });
 
@@ -890,27 +779,17 @@
                 });
             });
 
-            document.getElementById('zoomSlider').addEventListener('input', (e) => {
-                document.documentElement.style.setProperty('--zoom', e.target.value);
-            });
-
-            let grid = true;
-            document.getElementById('toggleGridBtn').addEventListener('click', (e) => {
-                grid = !grid; document.documentElement.style.setProperty('--show-grid', grid ? 'block' : 'none');
-                e.target.classList.toggle('bg-blue-600');
-            });
-
+            document.getElementById('zoomSlider').addEventListener('input', e => document.documentElement.style.setProperty('--zoom', e.target.value));
+            let grid = true; document.getElementById('toggleGridBtn').addEventListener('click', e => { grid = !grid; document.documentElement.style.setProperty('--show-grid', grid ? 'block' : 'none'); e.target.classList.toggle('bg-blue-600'); });
             document.getElementById('mirrorX').addEventListener('change', e => state.mirrorX = e.target.checked);
             document.getElementById('mirrorY').addEventListener('change', e => state.mirrorY = e.target.checked);
             document.getElementById('onionSkin').addEventListener('change', e => { state.onionSkin = e.target.checked; renderOverlay(); });
-
             document.getElementById('playBtn').addEventListener('click', togglePlayback);
             document.getElementById('fpsInput').addEventListener('change', e => state.fps = Math.max(1, parseInt(e.target.value)||12));
 
             window.addEventListener('keydown', e => {
-                if(e.target.tagName === 'INPUT') return;
-                const k = e.key.toLowerCase();
-                const tools = {'p':'pencil', 'e':'eraser', 'b':'bucket', 's':'globalfill', 'l':'line', 'r':'rect', 'o':'oval', 'm':'marquee', 'a':'lasso'};
+                if(e.target.tagName === 'INPUT') return; const k = e.key.toLowerCase();
+                const tools = {'p':'pencil', 'e':'eraser', 'b':'bucket', 's':'globalfill', 'i': 'picker', 'l':'line', 'r':'rect', 'o':'oval', 'm':'marquee', 'a':'lasso'};
                 if(tools[k]) document.querySelector(`[data-tool="${tools[k]}"]`).click();
                 if(k==='g') document.getElementById('toggleGridBtn').click();
                 if(k==='n') addNewFrame();
@@ -920,34 +799,18 @@
                 if(k==='x') selectColorSlot(state.activeColorSlot === 'primary' ? 'secondary' : 'primary');
                 if(k==='enter' || k==='escape') commitSelection();
             });
-        }
-
-        function startTutorial() {
-            introJs().setOptions({
-                showProgress: true,
-                steps: [
-                    { title: "PixelForge Pro", intro: "Let's explore your new upgrades." },
-                    { element: document.getElementById('zoomSlider').parentElement, title: "Zoom", intro: "Use this slider to get up close to those tiny pixels.", position: 'bottom' },
-                    { element: document.querySelector('.size-btn').parentElement, title: "Brush Size", intro: "Draw thicker lines and shapes by selecting a larger brush size.", position: 'right' },
-                    { element: document.getElementById('colorSlots'), title: "Dual Colors", intro: "Set a Primary and Secondary color. Press <b>X</b> on your keyboard to quickly swap between them!", position: 'right' },
-                    { element: document.getElementById('timeline'), title: "Animations / Folders", intro: "Organize your sprite into Animations (Folders). The Onion Skin and Exporter automatically target your currently active folder.", position: 'top' },
-                    { element: document.querySelector('button[onclick="saveProject()"]'), title: "Save & Load", intro: "Your progress auto-saves to the browser. You can also download <b>.pixel</b> project files to back them up or share them!", position: 'bottom' }
-                ]
-            }).start();
+            
+            PALETTE.forEach(c => {
+                const btn = document.createElement('button'); btn.className = 'w-6 h-6 rounded hover:scale-110 transition border border-gray-600';
+                btn.style.backgroundColor = c; btn.onclick = () => setColor(c); dom.palette.appendChild(btn);
+            });
+            document.getElementById('nativeColorPicker').addEventListener('input', e => setColor(e.target.value));
         }
 
         window.onload = () => {
-            initColors();
             setupListeners();
-            
             const saved = localStorage.getItem('pixelForge_autoSave');
-            if (saved) {
-                try { restoreFromData(JSON.parse(saved)); } catch(e) { addFolder(); }
-            } else { addFolder(); }
-            
-            if (!localStorage.getItem('pixelForgeProTutorialSeen')) {
-                setTimeout(() => { startTutorial(); localStorage.setItem('pixelForgeProTutorialSeen', 'true'); }, 500);
-            }
+            if (saved) { try { restoreFromData(JSON.parse(saved)); } catch(e) { addFolder(); } } else { addFolder(); }
         };
     </script>
 </body>
