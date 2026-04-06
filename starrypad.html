@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donner Starrypad Web Demo</title>
+    <!-- We are using Tailwind CSS for quick, beautiful styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #111827; color: #fff; font-family: 'Inter', sans-serif; }
+        .pad {
+            transition: transform 0.05s ease, background-color 0.1s ease, box-shadow 0.1s ease;
+        }
+        .pad.active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px currentColor;
+        }
+        /* Custom scrollbar for the log */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+    <!-- Header & Connection Info -->
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+        <div>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                Starrypad Web Demo
+            </h1>
+            <p class="text-gray-400 mt-1">Play pads, turn knobs, and slide faders to test features.</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex flex-col items-end">
+            <div id="status" class="flex items-center space-x-2 text-yellow-400 font-semibold mb-2">
+                <span class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse" id="status-light"></span>
+                <span id="status-text">Waiting for MIDI Access...</span>
+            </div>
+            <select id="midi-inputs" class="bg-gray-900 border border-gray-600 text-white text-sm rounded focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5">
+                <option value="">Select MIDI Device</option>
+            </select>
+            <button id="enable-audio" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-4 rounded text-sm transition-colors">
+                Enable Audio / Synthesizer
+            </button>
+        </div>
+    </header>
+
+    <main class="flex flex-col lg:flex-row gap-8 flex-1">
+        
+        <!-- Left Side: 16 Drum Pads -->
+        <div class="flex-1 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex flex-col items-center">
+            <h2 class="text-xl font-semibold mb-6 text-gray-200 w-full text-left">Pad Grid (Velocity Sensitive)</h2>
+            <div class="grid grid-cols-4 gap-3 w-full max-w-md aspect-square" id="pad-grid">
+                <!-- Pads injected via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Right Side: Knobs/Faders & Log -->
+        <div class="flex-1 flex flex-col gap-8">
+            
+            <!-- Controls (Knobs & Faders) -->
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                <h2 class="text-xl font-semibold mb-6 text-gray-200">Assignable Controls (CC)</h2>
+                <div class="grid grid-cols-4 gap-4" id="controls-grid">
+                    <!-- Controls 1-4 (Automatically mapped to knobs and faders when touched) -->
+                    <div class="flex flex-col items-center">
+                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
+                            <div id="cc-bar-0" class="absolute bottom-0 w-full bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-75" style="height: 0%;"></div>
+                        </div>
+                        <span id="cc-label-0" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
+                        <span id="cc-val-0" class="text-sm font-bold mt-1">--</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
+                            <div id="cc-bar-1" class="absolute bottom-0 w-full bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-75" style="height: 0%;"></div>
+                        </div>
+                        <span id="cc-label-1" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
+                        <span id="cc-val-1" class="text-sm font-bold mt-1">--</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
+                            <div id="cc-bar-2" class="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-emerald-400 transition-all duration-75" style="height: 0%;"></div>
+                        </div>
+                        <span id="cc-label-2" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
+                        <span id="cc-val-2" class="text-sm font-bold mt-1">--</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
+                            <div id="cc-bar-3" class="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-emerald-400 transition-all duration-75" style="height: 0%;"></div>
+                        </div>
+                        <span id="cc-label-3" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
+                        <span id="cc-val-3" class="text-sm font-bold mt-1">--</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-6 text-center italic">Touch the knobs or faders on your Starrypad to automatically assign them to these displays.</p>
+            </div>
+
+            <!-- MIDI Log -->
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-200">Raw MIDI Log</h2>
+                    <button onclick="clearLog()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded">Clear</button>
+                </div>
+                <div id="midi-log" class="flex-1 bg-gray-900 rounded border border-gray-700 p-3 font-mono text-xs text-green-400 overflow-y-auto h-48 whitespace-pre-wrap"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 1. UI Initialization ---
+        const padGrid = document.getElementById('pad-grid');
+        const pads = [];
+        // Generate 16 pads
+        for (let i = 0; i < 16; i++) {
+            const pad = document.createElement('div');
+            pad.className = 'pad bg-gray-700 rounded-lg flex flex-col items-center justify-center border-2 border-gray-600 text-gray-400 select-none';
+            pad.id = `pad-${i}`;
+            pad.innerHTML = `<span class="text-lg font-bold">Pad ${i+1}</span><span class="text-xs mt-1" id="pad-info-${i}">-</span>`;
+            padGrid.appendChild(pad);
+            pads.push(pad);
+        }
+
+        const logContainer = document.getElementById('midi-log');
+        function logMessage(msg) {
+            const time = new Date().toISOString().split('T')[1].slice(0, -1);
+            logContainer.innerHTML += `[${time}] ${msg}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+
+        // --- 2. MIDI Setup ---
+        let midiAccess = null;
+        let selectedInput = null;
+
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess({ sysex: false }).then(onMIDISuccess, onMIDIFailure);
+        } else {
+            document.getElementById('status-text').innerText = "Web MIDI API not supported in this browser.";
+            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-red-500";
+            alert("Your browser does not support the Web MIDI API. Please try Google Chrome, Microsoft Edge, or Brave.");
+        }
+
+        function onMIDISuccess(access) {
+            midiAccess = access;
+            document.getElementById('status-text').innerText = "MIDI Ready";
+            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-blue-500";
+            
+            populateMIDIInputs();
+            midiAccess.onstatechange = populateMIDIInputs;
+
+            document.getElementById('midi-inputs').addEventListener('change', (e) => {
+                connectToDevice(e.target.value);
+            });
+        }
+
+        function onMIDIFailure() {
+            document.getElementById('status-text').innerText = "Failed to access MIDI.";
+            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-red-500";
+        }
+
+        function populateMIDIInputs() {
+            const select = document.getElementById('midi-inputs');
+            select.innerHTML = '<option value="">Select MIDI Device</option>';
+            
+            let foundStarrypad = false;
+
+            for (let input of midiAccess.inputs.values()) {
+                let option = document.createElement('option');
+                option.value = input.id;
+                option.text = input.name;
+                select.appendChild(option);
+
+                // Auto-connect if name suggests it's a Starrypad or Donner device
+                if(!selectedInput && (input.name.toLowerCase().includes('starry') || input.name.toLowerCase().includes('donner') || input.name.toLowerCase().includes('midi'))) {
+                    option.selected = true;
+                    connectToDevice(input.id);
+                    foundStarrypad = true;
+                }
+            }
+        }
+
+        function connectToDevice(id) {
+            if (selectedInput) {
+                selectedInput.onmidimessage = null; // Clear previous listener
+            }
+            if (!id) return;
+            
+            selectedInput = midiAccess.inputs.get(id);
+            selectedInput.onmidimessage = handleMIDIMessage;
+            
+            document.getElementById('status-text').innerText = `Connected: ${selectedInput.name}`;
+            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-green-500";
+            logMessage(`System: Connected to ${selectedInput.name}`);
+        }
+
+
+        // --- 3. Audio Setup (Synthesizer) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let audioEnabled = false;
+        const activeNotes = {};
+
+        document.getElementById('enable-audio').addEventListener('click', () => {
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            audioEnabled = true;
+            document.getElementById('enable-audio').innerText = "Audio Enabled";
+            document.getElementById('enable-audio').classList.replace('bg-purple-600', 'bg-green-600');
+            document.getElementById('enable-audio').classList.replace('hover:bg-purple-700', 'hover:bg-green-700');
+            logMessage("System: Audio Synthesizer Enabled.");
+        });
+
+        function playSound(note, velocity) {
+            if (!audioEnabled) return;
+            if (activeNotes[note]) stopSound(note); // Stop if somehow already playing
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            // Calculate frequency from MIDI note
+            osc.type = 'triangle'; // Smooth synth sound
+            osc.frequency.value = 440 * Math.pow(2, (note - 69) / 12);
+
+            // Velocity impacts volume
+            const volume = (velocity / 127) * 0.5; // Max 50% volume to prevent peaking
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.05); // Attack
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+
+            activeNotes[note] = { osc, gainNode };
+        }
+
+        function stopSound(note) {
+            if (activeNotes[note]) {
+                const { osc, gainNode } = activeNotes[note];
+                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1); // Release
+                osc.stop(audioCtx.currentTime + 0.5);
+                delete activeNotes[note];
+            }
+        }
+
+
+        // --- 4. MIDI Message Handling ---
+        let boundCCs = []; // Keep track of CCs we've seen to bind them to UI
+
+        function handleMIDIMessage(message) {
+            // MIDI messages are usually 3 bytes
+            const [statusByte, data1, data2] = message.data;
+            
+            // Extract the channel and command
+            const command = statusByte >> 4;   // 1st half of byte
+            const channel = statusByte & 0xf;  // 2nd half of byte
+
+            // Determine message type
+            let msgType = 'Other';
+            if (command === 9 && data2 > 0) msgType = 'Note On';
+            else if (command === 8 || (command === 9 && data2 === 0)) msgType = 'Note Off';
+            else if (command === 11) msgType = 'Control Change';
+            else if (command === 14) msgType = 'Pitch Bend';
+
+            // Log it
+            logMessage(`Ch ${channel + 1} | ${msgType} | Val1: ${data1} | Val2: ${data2}`);
+
+            // Update UI based on type
+            if (msgType === 'Note On') {
+                triggerPad(data1, data2);
+                playSound(data1, data2);
+            } else if (msgType === 'Note Off') {
+                releasePad(data1);
+                stopSound(data1);
+            } else if (msgType === 'Control Change') {
+                updateCC(data1, data2);
+            }
+        }
+
+        // --- 5. Visual Implementations ---
+        function triggerPad(note, velocity) {
+            // The Starrypad usually outputs starting at note 36 (C1) for the bottom left pad.
+            // By doing (((note - 36) % 16) + 16) % 16, we perfectly map any bank shift 
+            // onto our 4x4 grid.
+            const padIndex = (((note - 36) % 16) + 16) % 16;
+            const pad = document.getElementById(`pad-${padIndex}`);
+            const info = document.getElementById(`pad-info-${padIndex}`);
+            
+            if (pad) {
+                // Color based on velocity (Blue to Pink to Red)
+                const hue = 240 - ((velocity / 127) * 240); 
+                const color = `hsl(${hue}, 100%, 60%)`;
+                
+                pad.classList.add('active');
+                pad.style.color = '#fff';
+                pad.style.backgroundColor = color;
+                pad.style.borderColor = color;
+                
+                info.innerText = `Note:${note} V:${velocity}`;
+            }
+        }
+
+        function releasePad(note) {
+            const padIndex = (((note - 36) % 16) + 16) % 16;
+            const pad = document.getElementById(`pad-${padIndex}`);
+            const info = document.getElementById(`pad-info-${padIndex}`);
+
+            if (pad) {
+                pad.classList.remove('active');
+                pad.style.color = '';
+                pad.style.backgroundColor = '';
+                pad.style.borderColor = '';
+                info.innerText = '-';
+            }
+        }
+
+        function updateCC(ccNumber, value) {
+            // Check if we've seen this CC number before
+            let ccIndex = boundCCs.indexOf(ccNumber);
+            
+            // If new, and we have space (4 slots), bind it
+            if (ccIndex === -1 && boundCCs.length < 4) {
+                boundCCs.push(ccNumber);
+                ccIndex = boundCCs.length - 1;
+                document.getElementById(`cc-label-${ccIndex}`).innerText = `CC ${ccNumber}`;
+                document.getElementById(`cc-label-${ccIndex}`).classList.replace('text-gray-400', 'text-purple-400');
+            }
+
+            // Update visuals if it's bound
+            if (ccIndex !== -1 && ccIndex < 4) {
+                const percentage = (value / 127) * 100;
+                document.getElementById(`cc-bar-${ccIndex}`).style.height = `${percentage}%`;
+                document.getElementById(`cc-val-${ccIndex}`).innerText = value;
+            }
+        }
+    </script>
+</body>
+</html>
