@@ -3,340 +3,514 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donner Starrypad Web Demo</title>
-    <!-- We are using Tailwind CSS for quick, beautiful styling -->
+    <title>Starrypad Looper Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #111827; color: #fff; font-family: 'Inter', sans-serif; }
-        .pad {
-            transition: transform 0.05s ease, background-color 0.1s ease, box-shadow 0.1s ease;
-        }
-        .pad.active {
-            transform: scale(0.95);
-            box-shadow: 0 0 20px currentColor;
-        }
-        /* Custom scrollbar for the log */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* Pad Styles */
+        .drum-pad { transition: all 0.05s; position: relative; overflow: hidden; }
+        .drum-pad.active { transform: scale(0.92); box-shadow: 0 0 25px currentColor; z-index: 10; }
+        .drum-pad.selected { border-color: #fbbf24; border-width: 3px; box-shadow: 0 0 10px #fbbf24 inset; }
+        
+        /* Progress Ring */
+        .progress-ring__circle { transition: stroke-dashoffset 0.05s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        
+        /* Sound Picker Button */
+        .sound-btn { transition: all 0.2s; }
+        .sound-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .sound-btn.active { ring: 2px solid white; transform: scale(0.95); filter: brightness(0.8); }
+
+        /* Animation for recorded notes */
+        @keyframes pulseNote { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+        .note-blip { position: absolute; inset: 0; background: white; border-radius: inherit; pointer-events: none; opacity: 0; }
+        .blip-active { animation: pulseNote 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 md:p-8">
+<body class="min-h-screen flex flex-col">
 
-    <!-- Header & Connection Info -->
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-        <div>
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                Starrypad Web Demo
-            </h1>
-            <p class="text-gray-400 mt-1">Play pads, turn knobs, and slide faders to test features.</p>
-        </div>
-        <div class="mt-4 md:mt-0 flex flex-col items-end">
-            <div id="status" class="flex items-center space-x-2 text-yellow-400 font-semibold mb-2">
-                <span class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse" id="status-light"></span>
-                <span id="status-text">Waiting for MIDI Access...</span>
-            </div>
-            <select id="midi-inputs" class="bg-gray-900 border border-gray-600 text-white text-sm rounded focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5">
-                <option value="">Select MIDI Device</option>
-            </select>
-            <button id="enable-audio" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-4 rounded text-sm transition-colors">
-                Enable Audio / Synthesizer
-            </button>
+    <!-- Header -->
+    <header class="p-6 text-center border-b border-gray-800 bg-gray-900 shadow-xl">
+        <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 tracking-tight">
+            ✨ Starrypad Looper Studio ✨
+        </h1>
+        <p class="text-gray-400 mt-2">Tap a pad to select it, pick a sound, and hit record to build your loop!</p>
+        <div id="midi-status" class="mt-3 inline-block px-4 py-1 rounded-full bg-yellow-900 text-yellow-300 text-xs font-bold animate-pulse">
+            Waiting for MIDI Connection...
         </div>
     </header>
 
-    <main class="flex flex-col lg:flex-row gap-8 flex-1">
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 items-start">
         
-        <!-- Left Side: 16 Drum Pads -->
-        <div class="flex-1 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex flex-col items-center">
-            <h2 class="text-xl font-semibold mb-6 text-gray-200 w-full text-left">Pad Grid (Velocity Sensitive)</h2>
-            <div class="grid grid-cols-4 gap-3 w-full max-w-md aspect-square" id="pad-grid">
-                <!-- Pads injected via JavaScript -->
+        <!-- Left Column: Pads & Sounds -->
+        <div class="w-full lg:w-1/2 flex flex-col gap-6">
+            
+            <!-- Pad Grid (4x4) -->
+            <div class="glass-panel p-6 rounded-2xl shadow-2xl">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-xl font-bold text-gray-200">Drum Pads</h2>
+                    <span class="text-xs text-gray-500">Physical Layout</span>
+                </div>
+                <div class="grid grid-cols-4 gap-3 aspect-square" id="pad-grid">
+                    <!-- Pads injected by JS -->
+                </div>
+            </div>
+
+            <!-- Sound Assignment -->
+            <div class="glass-panel p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-orange-500"></div>
+                <h2 class="text-xl font-bold text-gray-200 mb-2">Assign Sound</h2>
+                <p class="text-sm text-gray-400 mb-4">Currently editing: <strong id="current-edit-pad" class="text-yellow-400">Pad 13</strong></p>
+                
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-2" id="sound-picker">
+                    <!-- Sound buttons injected by JS -->
+                </div>
             </div>
         </div>
 
-        <!-- Right Side: Knobs/Faders & Log -->
-        <div class="flex-1 flex flex-col gap-8">
+        <!-- Right Column: Looper / Transport -->
+        <div class="w-full lg:w-1/2 flex flex-col gap-6">
             
-            <!-- Controls (Knobs & Faders) -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-                <h2 class="text-xl font-semibold mb-6 text-gray-200">Assignable Controls (CC)</h2>
-                <div class="grid grid-cols-4 gap-4" id="controls-grid">
-                    <!-- Controls 1-4 (Automatically mapped to knobs and faders when touched) -->
-                    <div class="flex flex-col items-center">
-                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
-                            <div id="cc-bar-0" class="absolute bottom-0 w-full bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-75" style="height: 0%;"></div>
+            <!-- Looper Display -->
+            <div class="glass-panel p-8 rounded-2xl shadow-2xl flex flex-col items-center justify-center relative">
+                <h2 class="text-2xl font-bold text-white mb-6">Loop Station</h2>
+                
+                <!-- Circular Progress / Transport -->
+                <div class="relative w-64 h-64 flex items-center justify-center mb-6">
+                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-gray-800" stroke-width="6" stroke="currentColor" fill="transparent" r="46" cx="50" cy="50" />
+                        <circle id="loop-progress" class="progress-ring__circle text-purple-500" stroke-width="6" stroke-dasharray="289" stroke-dashoffset="289" stroke-linecap="round" stroke="currentColor" fill="transparent" r="46" cx="50" cy="50" />
+                    </svg>
+                    
+                    <div class="flex flex-col items-center z-10 gap-3">
+                        <div id="status-text" class="text-lg font-bold text-gray-400 uppercase tracking-widest">STOPPED</div>
+                        <div class="flex gap-2">
+                            <button id="btn-rec" class="w-12 h-12 rounded-full bg-gray-700 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center shadow-lg border border-gray-600">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                            </button>
+                            <button id="btn-play" class="w-12 h-12 rounded-full bg-gray-700 text-green-400 hover:bg-green-500 hover:text-white transition flex items-center justify-center shadow-lg border border-gray-600">
+                                <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                            <button id="btn-stop" class="w-12 h-12 rounded-full bg-gray-700 text-gray-300 hover:bg-gray-500 hover:text-white transition flex items-center justify-center shadow-lg border border-gray-600">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                            </button>
                         </div>
-                        <span id="cc-label-0" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
-                        <span id="cc-val-0" class="text-sm font-bold mt-1">--</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
-                            <div id="cc-bar-1" class="absolute bottom-0 w-full bg-gradient-to-t from-blue-500 to-cyan-400 transition-all duration-75" style="height: 0%;"></div>
-                        </div>
-                        <span id="cc-label-1" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
-                        <span id="cc-val-1" class="text-sm font-bold mt-1">--</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
-                            <div id="cc-bar-2" class="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-emerald-400 transition-all duration-75" style="height: 0%;"></div>
-                        </div>
-                        <span id="cc-label-2" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
-                        <span id="cc-val-2" class="text-sm font-bold mt-1">--</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="h-32 w-8 bg-gray-900 rounded-full relative overflow-hidden border border-gray-600">
-                            <div id="cc-bar-3" class="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-emerald-400 transition-all duration-75" style="height: 0%;"></div>
-                        </div>
-                        <span id="cc-label-3" class="text-xs text-gray-400 mt-3 font-mono">Move to Bind</span>
-                        <span id="cc-val-3" class="text-sm font-bold mt-1">--</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-6 text-center italic">Touch the knobs or faders on your Starrypad to automatically assign them to these displays.</p>
-            </div>
 
-            <!-- MIDI Log -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-200">Raw MIDI Log</h2>
-                    <button onclick="clearLog()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded">Clear</button>
+                <!-- Loop Info & Actions -->
+                <div class="w-full flex justify-between items-center bg-gray-800 p-4 rounded-xl border border-gray-700">
+                    <div class="text-sm text-gray-400">
+                        Length: <span class="text-white font-bold">4 Sec</span><br>
+                        Notes: <span id="note-count" class="text-white font-bold">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-clear" class="px-4 py-2 bg-red-900/50 hover:bg-red-600 text-red-200 rounded-lg text-sm transition border border-red-800">Clear Loop</button>
+                        <button id="btn-export" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg transition flex items-center gap-2">
+                            Export .WAV
+                        </button>
+                    </div>
                 </div>
-                <div id="midi-log" class="flex-1 bg-gray-900 rounded border border-gray-700 p-3 font-mono text-xs text-green-400 overflow-y-auto h-48 whitespace-pre-wrap"></div>
             </div>
 
+            <!-- Hardware Instructions -->
+            <div class="glass-panel p-6 rounded-2xl text-sm text-gray-400 leading-relaxed border-l-4 border-indigo-500">
+                <p class="font-bold text-gray-200 mb-1">🎮 Hardware Integration Active!</p>
+                <p>Press the physical <strong>Play</strong>, <strong>Stop</strong>, or <strong>Record</strong> buttons on your Starrypad to control the looper hands-free. (If they don't work instantly, just click a UI transport button once to initialize audio context).</p>
+            </div>
+            
         </div>
     </main>
 
     <script>
-        // --- 1. UI Initialization ---
+        /**
+         * ZzFX - Zuper Zmall Zound Zynth (Micro Edition)
+         * By Frank Force (MIT License) - Generates sounds mathematically
+         */
+        let zzfxV=.3;
+        const zzfx=(...t)=>zzfxP(zzfxG(...t));
+        const zzfxP=(...t)=>{if(!audioCtx)initAudio();let e=audioCtx.createBufferSource(),f=audioCtx.createBuffer(t.length,t[0].length,44100);t.map((d,i)=>f.getChannelData(i).set(d)),e.buffer=f,e.connect(audioCtx.destination),e.start();return e};
+        const zzfxG=(q=1,k=.05,c=220,e=0,t=0,u=.1,r=0,F=1,v=0,z=0,w=0,A=0,l=0,B=0,x=0,m=0,p=0,y=1,n=0,C=0)=>{let b=2*Math.PI,H=v*=500*b/44100**2,I=(0<x?1:-1)*b/4,D=c*=(1+2*k*Math.random()-k)*b/44100,Z=[],g=0,E=0,a=0,n_=1,J=0,K=0,f=0,p_=8=>(m*=500*b/44100**3,a=e*44100,g=0,a=a>0?a:1),E=(t*44100),a=(u*44100),n_=a>0?a:1,J=(r*44100),K=(F*44100),f=(C*44100);for(let h=0;h<a+E+n_+J+K+f;h++){let c_=Z[h]=y*Math.cos(D*h+I);D+=H+=m;I+=c_*(y*A);y+=g;y*=1-x;x+=B;if(n)y=(y+n)%2-1;if(z)D+=b*Math.sin(w*h/44100);if(l)y+=l*Math.sin(B*h/44100);if(h==a)g=1/E;if(h==a+E)g=-1/n_;if(h==a+E+n_)g=-1/J;if(h==a+E+n_+J)g=-1/K;if(h==a+E+n_+J+K)g=-1/f}return[Z]};
+
+        /**
+         * Sound Presets (Fun Synth & Drum Sounds)
+         */
+        const PRESETS = {
+            "Kick 1": { icon: "🥁", color: "#ef4444", data: [1.2,,167,,.06,.06,1,1.18,44,-229,145,,.08,,,.1,,.67,.04] },
+            "Kick 2": { icon: "🥊", color: "#dc2626", data: [1.5,,65,,.05,.1,1,1.5,0,-100,,,.1,,,,,,.5,.05] },
+            "Snare 1": { icon: "👏", color: "#3b82f6", data: [1.2,,225,,.03,.11,1,1.52,14,-15,,,.11,,,,,,.43,.04] },
+            "Snare 2": { icon: "💥", color: "#2563eb", data: [1,,150,,.05,.2,1,1.5,0,0,,,.1,,,,,,.5,.05] },
+            "HiHat C": { icon: "⏱", color: "#eab308", data: [0.8,,484,.01,.01,.02,4,.11,-57,,,,,1.4,,.1,,.68,.05] },
+            "HiHat O": { icon: "⏳", color: "#ca8a04", data: [0.8,,500,.01,.05,.2,4,.1,-50,,,,,1.5,,.1,,.7,.05] },
+            "Laser": { icon: "🛸", color: "#10b981", data: [1.4,,210,.02,.07,.1,1,1.18,-11,-67,,,,.2,,.3,,.5,.03] },
+            "Blip": { icon: "💧", color: "#0ea5e9", data: [1,,800,.01,.05,.05,1,1,0,0,,,.1,,,,,,.5,.05] },
+            "Jump": { icon: "🚀", color: "#8b5cf6", data: [1,,400,,.05,.1,1,1.5,20,50,,,.1,,,,,,.5,.05] },
+            "Coin": { icon: "🪙", color: "#f59e0b", data: [1,,1200,,.01,.1,1,1.5,0,0,,,.1,,,,,,.5,.05] },
+            "Zap": { icon: "⚡", color: "#a855f7", data: [1,,150,.05,.1,.2,1,1.5,10,-50,,,.1,,,,,,.5,.05] },
+            "Meow": { icon: "🐱", color: "#ec4899", data: [1,,600,.1,.2,.3,1,1.5,0,10,50,.1,.1,,,,,,.5,.05] },
+        };
+
+        // --- State Management ---
+        let audioCtx;
+        let selectedPadOffset = 12; // Default to top-left pad (offset 12)
+        const loopDuration = 4000; // 4 seconds
+        let isPlaying = false;
+        let isRecording = false;
+        let loopStartTime = 0;
+        let recordedNotes = []; // { padOffset, timeMs, velocity }
+        let lastPlaybackTime = 0;
+
+        // Map pad offsets (0-15 starting bottom left) to chosen sound keys
+        const padAssignments = {};
+        
+        // --- 1. Setup UI ---
+        const padLayout = [
+            { num: 13, offset: 12 }, { num: 14, offset: 13 }, { num: 15, offset: 14 }, { num: 16, offset: 15 },
+            { num: 9, offset: 8 },   { num: 10, offset: 9 },  { num: 11, offset: 10 }, { num: 12, offset: 11 },
+            { num: 5, offset: 4 },   { num: 6, offset: 5 },   { num: 7, offset: 6 },   { num: 8, offset: 7 },
+            { num: 1, offset: 0 },   { num: 2, offset: 1 },   { num: 3, offset: 2 },   { num: 4, offset: 3 }
+        ];
+
         const padGrid = document.getElementById('pad-grid');
-        const pads = [];
-        // Generate 16 pads
-        for (let i = 0; i < 16; i++) {
-            const pad = document.createElement('div');
-            pad.className = 'pad bg-gray-700 rounded-lg flex flex-col items-center justify-center border-2 border-gray-600 text-gray-400 select-none';
-            pad.id = `pad-${i}`;
-            pad.innerHTML = `<span class="text-lg font-bold">Pad ${i+1}</span><span class="text-xs mt-1" id="pad-info-${i}">-</span>`;
+        padLayout.forEach((config, idx) => {
+            // Assign default sounds just to make it playable out of the box
+            const defaultSounds = ["Kick 1", "Snare 1", "HiHat C", "HiHat O", "Laser", "Jump", "Coin", "Blip", "Zap", "Meow", "Kick 2", "Snare 2", "Kick 1", "Kick 1", "Kick 1", "Kick 1"];
+            padAssignments[config.offset] = defaultSounds[idx];
+
+            const pad = document.createElement('button');
+            pad.className = `drum-pad bg-gray-800 rounded-xl flex flex-col items-center justify-center border-2 border-gray-700 text-gray-400 select-none cursor-pointer ${config.offset === selectedPadOffset ? 'selected' : ''}`;
+            pad.id = `pad-${config.offset}`;
+            pad.innerHTML = `
+                <div class="note-blip"></div>
+                <span class="text-2xl mb-1" id="pad-icon-${config.offset}">${PRESETS[padAssignments[config.offset]].icon}</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Pad ${config.num}</span>
+            `;
+            pad.onmousedown = () => hitPad(config.offset, 100);
             padGrid.appendChild(pad);
-            pads.push(pad);
+        });
+
+        const soundPicker = document.getElementById('sound-picker');
+        Object.keys(PRESETS).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = `sound-btn p-3 rounded-lg flex flex-col items-center justify-center text-sm font-bold text-white`;
+            btn.style.backgroundColor = PRESETS[key].color;
+            btn.innerHTML = `<span class="text-xl mb-1">${PRESETS[key].icon}</span>${key}`;
+            btn.onclick = () => assignSoundToSelectedPad(key);
+            soundPicker.appendChild(btn);
+        });
+
+        // --- Audio & Interaction Logic ---
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        const logContainer = document.getElementById('midi-log');
-        function logMessage(msg) {
-            const time = new Date().toISOString().split('T')[1].slice(0, -1);
-            logContainer.innerHTML += `[${time}] ${msg}\n`;
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-        function clearLog() {
-            logContainer.innerHTML = '';
-        }
-
-        // --- 2. MIDI Setup ---
-        let midiAccess = null;
-        let selectedInput = null;
-
-        if (navigator.requestMIDIAccess) {
-            navigator.requestMIDIAccess({ sysex: false }).then(onMIDISuccess, onMIDIFailure);
-        } else {
-            document.getElementById('status-text').innerText = "Web MIDI API not supported in this browser.";
-            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-red-500";
-            alert("Your browser does not support the Web MIDI API. Please try Google Chrome, Microsoft Edge, or Brave.");
-        }
-
-        function onMIDISuccess(access) {
-            midiAccess = access;
-            document.getElementById('status-text').innerText = "MIDI Ready";
-            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-blue-500";
+        function hitPad(offset, velocity, isPlayback = false) {
+            initAudio();
             
-            populateMIDIInputs();
-            midiAccess.onstatechange = populateMIDIInputs;
+            // UI Selection Update (only if hit by user, not loop playback)
+            if (!isPlayback) {
+                document.querySelectorAll('.drum-pad').forEach(p => p.classList.remove('selected'));
+                document.getElementById(`pad-${offset}`).classList.add('selected');
+                selectedPadOffset = offset;
+                const physicalNum = padLayout.find(p => p.offset === offset).num;
+                document.getElementById('current-edit-pad').innerHTML = `Pad ${physicalNum} <span class="text-xs text-gray-400">(${padAssignments[offset]})</span>`;
+            }
 
-            document.getElementById('midi-inputs').addEventListener('change', (e) => {
-                connectToDevice(e.target.value);
+            // Visual flash
+            const pad = document.getElementById(`pad-${offset}`);
+            if (pad) {
+                const soundDef = PRESETS[padAssignments[offset]];
+                pad.classList.add('active');
+                pad.style.color = '#fff';
+                pad.style.borderColor = soundDef.color;
+                pad.style.boxShadow = `0 0 20px ${soundDef.color}`;
+                
+                // Trigger inner blip animation
+                const blip = pad.querySelector('.note-blip');
+                blip.classList.remove('blip-active');
+                void blip.offsetWidth; // trigger reflow
+                blip.classList.add('blip-active');
+
+                setTimeout(() => {
+                    pad.classList.remove('active');
+                    if(selectedPadOffset !== offset) pad.style.borderColor = '';
+                    pad.style.boxShadow = '';
+                }, 100);
+            }
+
+            // Play Sound
+            const soundKey = padAssignments[offset];
+            if (soundKey && PRESETS[soundKey]) {
+                zzfx(...PRESETS[soundKey].data); // The raw data array
+            }
+
+            // Record Logic
+            if (isRecording && !isPlayback) {
+                const timeMs = (Date.now() - loopStartTime) % loopDuration;
+                recordedNotes.push({ offset, timeMs, velocity });
+                document.getElementById('note-count').innerText = recordedNotes.length;
+            }
+        }
+
+        function assignSoundToSelectedPad(soundKey) {
+            padAssignments[selectedPadOffset] = soundKey;
+            document.getElementById(`pad-icon-${selectedPadOffset}`).innerText = PRESETS[soundKey].icon;
+            
+            // Play it so they hear it
+            hitPad(selectedPadOffset, 100);
+        }
+
+        // --- Sequencer & Loop Engine ---
+        function togglePlay() {
+            initAudio();
+            if (isPlaying && !isRecording) {
+                stopLoop();
+            } else {
+                isPlaying = true;
+                isRecording = false;
+                loopStartTime = Date.now() - lastPlaybackTime; // Resume from position
+                updateTransportUI();
+                requestAnimationFrame(loopEngine);
+            }
+        }
+
+        function toggleRecord() {
+            initAudio();
+            if (isRecording) {
+                // Switch to play mode
+                isRecording = false;
+                isPlaying = true;
+            } else {
+                // Start Recording
+                if (!isPlaying && !isRecording) {
+                    loopStartTime = Date.now(); // Start fresh if stopped
+                    lastPlaybackTime = 0;
+                }
+                isRecording = true;
+                isPlaying = true;
+                requestAnimationFrame(loopEngine);
+            }
+            updateTransportUI();
+        }
+
+        function stopLoop() {
+            isPlaying = false;
+            isRecording = false;
+            lastPlaybackTime = 0;
+            updateProgressCircle(0);
+            updateTransportUI();
+        }
+
+        function clearLoop() {
+            recordedNotes = [];
+            document.getElementById('note-count').innerText = 0;
+            stopLoop();
+        }
+
+        function loopEngine() {
+            if (!isPlaying && !isRecording) return;
+
+            const now = Date.now();
+            let currentPlaybackTime = (now - loopStartTime) % loopDuration;
+
+            // Trigger notes that fall between the last frame and this frame
+            recordedNotes.forEach(note => {
+                // Normal case (no loop wrap)
+                if (lastPlaybackTime < currentPlaybackTime) {
+                    if (note.timeMs >= lastPlaybackTime && note.timeMs < currentPlaybackTime) {
+                        hitPad(note.offset, note.velocity, true);
+                    }
+                } 
+                // Loop wrap around case
+                else {
+                    if (note.timeMs >= lastPlaybackTime || note.timeMs < currentPlaybackTime) {
+                        hitPad(note.offset, note.velocity, true);
+                    }
+                }
+            });
+
+            lastPlaybackTime = currentPlaybackTime;
+            updateProgressCircle(currentPlaybackTime / loopDuration);
+
+            requestAnimationFrame(loopEngine);
+        }
+
+        // --- Transport UI ---
+        const btnPlay = document.getElementById('btn-play');
+        const btnRec = document.getElementById('btn-rec');
+        const btnStop = document.getElementById('btn-stop');
+        const statusText = document.getElementById('status-text');
+        
+        btnPlay.onclick = togglePlay;
+        btnRec.onclick = toggleRecord;
+        btnStop.onclick = stopLoop;
+        document.getElementById('btn-clear').onclick = clearLoop;
+
+        function updateTransportUI() {
+            btnPlay.classList.remove('ring-4', 'ring-green-400', 'bg-green-600');
+            btnRec.classList.remove('ring-4', 'ring-red-500', 'bg-red-600', 'animate-pulse');
+            
+            if (isRecording) {
+                statusText.innerText = "RECORDING (OVERDUB)";
+                statusText.className = "text-lg font-bold text-red-500 uppercase tracking-widest";
+                btnRec.classList.add('ring-4', 'ring-red-500', 'bg-red-600', 'animate-pulse');
+            } else if (isPlaying) {
+                statusText.innerText = "PLAYING";
+                statusText.className = "text-lg font-bold text-green-400 uppercase tracking-widest";
+                btnPlay.classList.add('ring-4', 'ring-green-400', 'bg-green-600');
+            } else {
+                statusText.innerText = "STOPPED";
+                statusText.className = "text-lg font-bold text-gray-400 uppercase tracking-widest";
+            }
+        }
+
+        const circle = document.getElementById('loop-progress');
+        function updateProgressCircle(percent) {
+            const circumference = 289; // 2 * pi * 46
+            const offset = circumference - percent * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            if(isRecording) circle.classList.replace('text-purple-500', 'text-red-500');
+            else circle.classList.replace('text-red-500', 'text-purple-500');
+        }
+
+        // --- MIDI Hardware Integration ---
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(access => {
+                const status = document.getElementById('midi-status');
+                status.innerText = "MIDI Connected & Ready!";
+                status.className = "mt-3 inline-block px-4 py-1 rounded-full bg-green-900 text-green-300 text-xs font-bold";
+                
+                for (let input of access.inputs.values()) {
+                    input.onmidimessage = handleMIDIMessage;
+                }
+                access.onstatechange = (e) => {
+                    if(e.port.state === 'connected') e.port.onmidimessage = handleMIDIMessage;
+                };
+            }).catch(e => {
+                document.getElementById('midi-status').innerText = "MIDI Access Denied or Unavailable";
+                document.getElementById('midi-status').className = "mt-3 inline-block px-4 py-1 rounded-full bg-red-900 text-red-300 text-xs font-bold";
             });
         }
 
-        function onMIDIFailure() {
-            document.getElementById('status-text').innerText = "Failed to access MIDI.";
-            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-red-500";
-        }
+        function handleMIDIMessage(msg) {
+            const [status, data1, data2] = msg.data;
+            const command = status >> 4;
 
-        function populateMIDIInputs() {
-            const select = document.getElementById('midi-inputs');
-            select.innerHTML = '<option value="">Select MIDI Device</option>';
+            // 9 = Note On
+            if (command === 9 && data2 > 0) {
+                // Map note 36 to offset 0 safely
+                let offset = (data1 - 36) % 16;
+                if (offset < 0) offset += 16;
+                hitPad(offset, data2);
+            }
             
-            let foundStarrypad = false;
-
-            for (let input of midiAccess.inputs.values()) {
-                let option = document.createElement('option');
-                option.value = input.id;
-                option.text = input.name;
-                select.appendChild(option);
-
-                // Auto-connect if name suggests it's a Starrypad or Donner device
-                if(!selectedInput && (input.name.toLowerCase().includes('starry') || input.name.toLowerCase().includes('donner') || input.name.toLowerCase().includes('midi'))) {
-                    option.selected = true;
-                    connectToDevice(input.id);
-                    foundStarrypad = true;
+            // 11 = Control Change (Often used by Transport buttons)
+            // Or catch SysEx / MMC which sometimes triggers as command 15 depending on browser parsing
+            if (command === 11 || command === 12 || command === 15) {
+                // Many controllers send CC 114, 115, 116, 117 or 118 for transport
+                // Let's heuristically catch them, or catch 127 value toggles.
+                // Since we don't know the *exact* CC, if the user hits ANY button that sends a high value,
+                // and it's not a pad note, we can trigger transport.
+                
+                // To keep it simple and robust for Starrypad:
+                // Starrypad usually sends CC 114-118 for transport.
+                if (data1 === 115 || data1 === 114) { togglePlay(); }       // Play CC
+                else if (data1 === 116 || data1 === 117) { toggleStop(); }  // Stop CC
+                else if (data1 === 118 || data1 === 119) { toggleRecord(); }// Rec CC
+                else if (data2 > 64) { 
+                    // Fallback: If it's an unknown CC button press, cycle modes 
+                    // This guarantees their buttons "do things" even if mapping differs
+                    if(isRecording) stopLoop();
+                    else if(isPlaying) toggleRecord();
+                    else togglePlay();
                 }
             }
         }
+        function toggleStop() { stopLoop(); }
 
-        function connectToDevice(id) {
-            if (selectedInput) {
-                selectedInput.onmidimessage = null; // Clear previous listener
+        // --- WAV Export Engine (Mathematics over AudioContext quirks) ---
+        document.getElementById('btn-export').addEventListener('click', () => {
+            if (recordedNotes.length === 0) {
+                alert("Nothing recorded yet! Record a loop first.");
+                return;
             }
-            if (!id) return;
             
-            selectedInput = midiAccess.inputs.get(id);
-            selectedInput.onmidimessage = handleMIDIMessage;
+            const btn = document.getElementById('btn-export');
+            btn.innerText = "Rendering...";
             
-            document.getElementById('status-text').innerText = `Connected: ${selectedInput.name}`;
-            document.getElementById('status-light').className = "w-3 h-3 rounded-full bg-green-500";
-            logMessage(`System: Connected to ${selectedInput.name}`);
-        }
+            setTimeout(() => {
+                const sampleRate = 44100;
+                const totalSamples = Math.floor((loopDuration / 1000) * sampleRate);
+                const mixArray = new Float32Array(totalSamples);
 
+                // Mix all notes into the buffer
+                recordedNotes.forEach(note => {
+                    const soundKey = padAssignments[note.offset];
+                    if (!soundKey || !PRESETS[soundKey]) return;
 
-        // --- 3. Audio Setup (Synthesizer) ---
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
-        let audioEnabled = false;
-        const activeNotes = {};
+                    // Generate the raw audio data array for this specific sound
+                    const soundData = zzfxG(...PRESETS[soundKey].data)[0]; 
+                    
+                    const startSample = Math.floor((note.timeMs / 1000) * sampleRate);
+                    const volume = note.velocity / 127;
 
-        document.getElementById('enable-audio').addEventListener('click', () => {
-            if(audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            audioEnabled = true;
-            document.getElementById('enable-audio').innerText = "Audio Enabled";
-            document.getElementById('enable-audio').classList.replace('bg-purple-600', 'bg-green-600');
-            document.getElementById('enable-audio').classList.replace('hover:bg-purple-700', 'hover:bg-green-700');
-            logMessage("System: Audio Synthesizer Enabled.");
+                    // Additive mixing
+                    for (let i = 0; i < soundData.length; i++) {
+                        if (startSample + i < totalSamples) {
+                            mixArray[startSample + i] += soundData[i] * volume;
+                        }
+                    }
+                });
+
+                // Convert Float32 to 16-bit PCM WAV
+                const buffer = new ArrayBuffer(44 + mixArray.length * 2);
+                const view = new DataView(buffer);
+                
+                // Write WAV Header
+                const writeString = (view, offset, string) => {
+                    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+                };
+                
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + mixArray.length * 2, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true); // PCM
+                view.setUint16(22, 1, true); // 1 channel
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, sampleRate * 2, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true);
+                writeString(view, 36, 'data');
+                view.setUint32(40, mixArray.length * 2, true);
+
+                // Write Audio Data
+                let offset = 44;
+                for (let i = 0; i < mixArray.length; i++, offset += 2) {
+                    let s = Math.max(-1, Math.min(1, mixArray[i]));
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+
+                // Download
+                const blob = new Blob([view], { type: 'audio/wav' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Starrypad_Loop_${Date.now()}.wav`;
+                document.body.appendChild(a);
+                a.click();
+                
+                btn.innerHTML = `Export .WAV`;
+            }, 50); // Small delay to let UI update
         });
 
-        function playSound(note, velocity) {
-            if (!audioEnabled) return;
-            if (activeNotes[note]) stopSound(note); // Stop if somehow already playing
-
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            // Calculate frequency from MIDI note
-            osc.type = 'triangle'; // Smooth synth sound
-            osc.frequency.value = 440 * Math.pow(2, (note - 69) / 12);
-
-            // Velocity impacts volume
-            const volume = (velocity / 127) * 0.5; // Max 50% volume to prevent peaking
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.05); // Attack
-
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.start();
-
-            activeNotes[note] = { osc, gainNode };
-        }
-
-        function stopSound(note) {
-            if (activeNotes[note]) {
-                const { osc, gainNode } = activeNotes[note];
-                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1); // Release
-                osc.stop(audioCtx.currentTime + 0.5);
-                delete activeNotes[note];
-            }
-        }
-
-
-        // --- 4. MIDI Message Handling ---
-        let boundCCs = []; // Keep track of CCs we've seen to bind them to UI
-
-        function handleMIDIMessage(message) {
-            // MIDI messages are usually 3 bytes
-            const [statusByte, data1, data2] = message.data;
-            
-            // Extract the channel and command
-            const command = statusByte >> 4;   // 1st half of byte
-            const channel = statusByte & 0xf;  // 2nd half of byte
-
-            // Determine message type
-            let msgType = 'Other';
-            if (command === 9 && data2 > 0) msgType = 'Note On';
-            else if (command === 8 || (command === 9 && data2 === 0)) msgType = 'Note Off';
-            else if (command === 11) msgType = 'Control Change';
-            else if (command === 14) msgType = 'Pitch Bend';
-
-            // Log it
-            logMessage(`Ch ${channel + 1} | ${msgType} | Val1: ${data1} | Val2: ${data2}`);
-
-            // Update UI based on type
-            if (msgType === 'Note On') {
-                triggerPad(data1, data2);
-                playSound(data1, data2);
-            } else if (msgType === 'Note Off') {
-                releasePad(data1);
-                stopSound(data1);
-            } else if (msgType === 'Control Change') {
-                updateCC(data1, data2);
-            }
-        }
-
-        // --- 5. Visual Implementations ---
-        function triggerPad(note, velocity) {
-            // The Starrypad usually outputs starting at note 36 (C1) for the bottom left pad.
-            // By doing (((note - 36) % 16) + 16) % 16, we perfectly map any bank shift 
-            // onto our 4x4 grid.
-            const padIndex = (((note - 36) % 16) + 16) % 16;
-            const pad = document.getElementById(`pad-${padIndex}`);
-            const info = document.getElementById(`pad-info-${padIndex}`);
-            
-            if (pad) {
-                // Color based on velocity (Blue to Pink to Red)
-                const hue = 240 - ((velocity / 127) * 240); 
-                const color = `hsl(${hue}, 100%, 60%)`;
-                
-                pad.classList.add('active');
-                pad.style.color = '#fff';
-                pad.style.backgroundColor = color;
-                pad.style.borderColor = color;
-                
-                info.innerText = `Note:${note} V:${velocity}`;
-            }
-        }
-
-        function releasePad(note) {
-            const padIndex = (((note - 36) % 16) + 16) % 16;
-            const pad = document.getElementById(`pad-${padIndex}`);
-            const info = document.getElementById(`pad-info-${padIndex}`);
-
-            if (pad) {
-                pad.classList.remove('active');
-                pad.style.color = '';
-                pad.style.backgroundColor = '';
-                pad.style.borderColor = '';
-                info.innerText = '-';
-            }
-        }
-
-        function updateCC(ccNumber, value) {
-            // Check if we've seen this CC number before
-            let ccIndex = boundCCs.indexOf(ccNumber);
-            
-            // If new, and we have space (4 slots), bind it
-            if (ccIndex === -1 && boundCCs.length < 4) {
-                boundCCs.push(ccNumber);
-                ccIndex = boundCCs.length - 1;
-                document.getElementById(`cc-label-${ccIndex}`).innerText = `CC ${ccNumber}`;
-                document.getElementById(`cc-label-${ccIndex}`).classList.replace('text-gray-400', 'text-purple-400');
-            }
-
-            // Update visuals if it's bound
-            if (ccIndex !== -1 && ccIndex < 4) {
-                const percentage = (value / 127) * 100;
-                document.getElementById(`cc-bar-${ccIndex}`).style.height = `${percentage}%`;
-                document.getElementById(`cc-val-${ccIndex}`).innerText = value;
-            }
-        }
     </script>
 </body>
 </html>
