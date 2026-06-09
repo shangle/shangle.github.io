@@ -186,8 +186,8 @@ function switchView(viewName) {
       </div>
     `;
     container.appendChild(viewElement);
-    document.getElementById('btn-export-csv').addEventListener('click', () => window.open('/api/export?type=csv'));
-    document.getElementById('btn-export-json').addEventListener('click', () => window.open('/api/export?type=json'));
+    document.getElementById('btn-export-csv').addEventListener('click', () => window.open(API_BASE + '/api/export?type=csv'));
+    document.getElementById('btn-export-json').addEventListener('click', () => window.open(API_BASE + '/api/export?type=json'));
     fetchTransactionsData();
   } else if (viewName === 'events') {
     viewElement.innerHTML = `
@@ -217,7 +217,7 @@ function switchView(viewName) {
       </div>
     `;
     container.appendChild(viewElement);
-    document.getElementById('btn-export-ics').addEventListener('click', () => window.open('/api/export?type=ics'));
+    document.getElementById('btn-export-ics').addEventListener('click', () => window.open(API_BASE + '/api/export?type=ics'));
     fetchEventsData();
   } else if (viewName === 'settings') {
     viewElement.innerHTML = `

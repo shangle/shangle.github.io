@@ -473,6 +473,27 @@
   </footer>
 
   <script>
+    // Ensure correct relative paths when loaded on GitHub Pages under a subdirectory
+    (function() {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isLocal) {
+        // If loaded without trailing slash (e.g. /executive-assistant), redirect to force trailing slash
+        // so relative resources/links resolve correctly.
+        if (window.location.pathname.endsWith('/executive-assistant')) {
+          window.location.replace(window.location.pathname + '/');
+          return;
+        }
+
+        // Dynamically fix the dashboard links to ensure they include the subdirectory
+        document.addEventListener('DOMContentLoaded', () => {
+          const dashboardLinks = document.querySelectorAll('a[href="dashboard.html"]');
+          dashboardLinks.forEach(link => {
+            link.href = '/executive-assistant/dashboard.html';
+          });
+        });
+      }
+    })();
+
     function toggleWaitlistForm() {
       const sec = document.getElementById('waitlist-section');
       sec.classList.add('active');
