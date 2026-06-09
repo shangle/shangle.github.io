@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Assistant - The Sovereign Personal Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #050811;
+      --color-surface: #0a0e1a;
+      --color-gold: #d4af37; /* Clean luxury gold */
+      --color-gold-light: #e5c158;
+      --color-text-primary: #f8fafc;
+      --color-text-secondary: #94a3b8;
+      --border-color: rgba(212, 175, 55, 0.15);
+      --font-serif: 'Cinzel', Georgia, serif;
+      --font-sans: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--color-gold);
+    }
+
+    .logo-box {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .nav-links a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-left: 24px;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--color-gold);
+    }
+
+    .hero {
+      max-width: 1000px;
+      margin: 80px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .hero-pretitle {
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+      font-size: 0.9rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      margin-bottom: 24px;
+      background: linear-gradient(180deg, #fff 0%, #a2aab8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--color-text-secondary);
+      max-width: 700px;
+      margin: 0 auto 40px;
+      font-weight: 300;
+    }
+
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-gold {
+      background-color: var(--color-gold);
+      color: #050811;
+      border: 1px solid var(--color-gold);
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
+    }
+
+    .btn-gold:hover {
+      background-color: var(--color-gold-light);
+      box-shadow: 0 4px 30px rgba(212, 175, 55, 0.35);
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border-color);
+      color: var(--color-gold);
+      background: transparent;
+    }
+
+    .btn-outline:hover {
+      background-color: rgba(212, 175, 55, 0.05);
+      border-color: var(--color-gold);
+    }
+
+    .features {
+      max-width: 1100px;
+      margin: 80px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+
+    .feature-card {
+      background-color: var(--color-surface);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 32px;
+      text-align: left;
+      border-top: 2px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-top-color: var(--color-gold);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: var(--color-gold);
+    }
+
+    .feature-card p {
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+    }
+
+    .pricing {
+      max-width: 900px;
+      margin: 100px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .pricing-title {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+      color: var(--color-gold);
+    }
+
+    .pricing-desc {
+      color: var(--color-text-secondary);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto 50px;
+      font-weight: 300;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+      align-items: stretch;
+    }
+
+    .pricing-card {
+      background-color: var(--color-surface);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      position: relative;
+    }
+
+    .pricing-card.premium {
+      border: 1px solid var(--color-gold);
+      box-shadow: 0 10px 40px rgba(212, 175, 55, 0.08);
+    }
+
+    .badge-premium {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: var(--color-gold);
+      color: #050811;
+      font-size: 0.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      letter-spacing: 1px;
+    }
+
+    .pricing-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--color-gold);
+    }
+
+    .price {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: 500;
+      margin: 20px 0;
+      color: var(--color-text-primary);
+    }
+
+    .price span {
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      font-family: var(--font-sans);
+    }
+
+    .price-features {
+      list-style: none;
+      margin-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .price-features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-features li::before {
+      content: "✓";
+      color: var(--color-gold);
+      font-weight: bold;
+    }
+
+    /* Waitlist form overlay */
+    .waitlist-section {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      background-color: var(--color-surface);
+      text-align: center;
+      display: none; /* Dynamic display */
+    }
+
+    .waitlist-section.active {
+      display: block;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .waitlist-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .form-input {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      padding: 14px;
+      color: white;
+      font-family: var(--font-sans);
+      outline: none;
+      border-radius: 2px;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-gold);
+    }
+
+    .waitlist-success {
+      display: none;
+      padding: 20px;
+      color: var(--color-gold);
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    footer {
+      max-width: 1200px;
+      margin: 100px auto 0;
+      padding: 40px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-box">EA</div>
+      <div>EXECUTIVE ASSISTANT</div>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/dashboard.html" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.75rem;">Launch Local Vault</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-pretitle">The Ledger of the Sovereign Individual</div>
+      <h1>A Personal Operating System for Your Financial Life Data</h1>
+      <p>Executive Assistant is a local-first personal knowledgebase that ingests messy inbox alerts, statement PDFs, receipts, and bank CSVs, structures them into an open-standards ledger, and reconciles matches securely on your own hardware.</p>
+      <div class="cta-group">
+        <a href="/dashboard.html" class="btn btn-gold">Launch Local Vault</a>
+        <a href="#pricing" class="btn btn-outline">Private Waitlist</a>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="feature-card">
+        <div class="feature-icon">I</div>
+        <h3>Evidence Ingestion</h3>
+        <p>Import emails (.eml), CSV statement reports, and PDFs. Data is stored securely in your local vault with strict audit trails and unique content hashes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">II</div>
+        <h3>Reconciliation Engine</h3>
+        <p>Automatically match transaction alerts to CSV rows, link receipts to bank payments, and transfer warranties or return windows onto official transactions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">III</div>
+        <h3>Sovereignty & Portability</h3>
+        <p>No account, no cloud, no lock-in. Export everything as open standards (JSON-LD, CSV, ICS) or wipe your vault with a single click. Your data remains yours.</p>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+      <h2 class="pricing-title">Acquisition & Deployment</h2>
+      <p class="pricing-desc">Choose between complete local sovereignty or our high-touch bespoke private managed hosting.</p>
+      
+      <div class="pricing-grid">
+        <!-- Card 1: Sovereign Open Source -->
+        <div class="pricing-card">
+          <h3>Local Sovereign</h3>
+          <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom: 20px;">Download, compile, and run the system on your own secure home hardware.</p>
+          <div class="price">$0<span>/forever</span></div>
+          <ul class="price-features" style="flex-grow:1;">
+            <li>100% offline, local-first operation</li>
+            <li>Direct file ingestion & local SQLite database</li>
+            <li>Fuzzy receipt-to-payment reconciliation</li>
+            <li>No cloud dependencies, keys stored in config</li>
+            <li>Zero analytics, zero tracking, total privacy</li>
+          </ul>
+          <a href="/dashboard.html" class="btn btn-outline" style="text-align:center;">Launch Vault</a>
+        </div>
+
+        <!-- Card 2: Managed Private Concierge -->
+        <div class="pricing-card premium">
+          <div class="badge-premium">Exclusive Access</div>
+          <h3>Managed Concierge</h3>
+          <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom: 20px;">For individuals seeking the convenience of a managed private ledger.</p>
+          <div class="price">$250<span>/month</span></div>
+          <ul class="price-features" style="flex-grow:1;">
+            <li>End-to-end encrypted private Pod hosting</li>
+            <li>Automated secure mailbox synchronization</li>
+            <li>Dedicated reconciliation assistants</li>
+            <li>Personal account concierge support</li>
+            <li>Guaranteed limit of 50 clients per quarter</li>
+          </ul>
+          <button class="btn btn-gold" onclick="toggleWaitlistForm()">Join Private Waitlist</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Waitlist Section -->
+    <section class="waitlist-section" id="waitlist-section">
+      <div id="waitlist-form-container">
+        <h3 style="font-family:var(--font-serif); color:var(--color-gold); margin-bottom:12px;">Request Managed Invitation</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-secondary);">Please provide details to request an application slot for our concierge managed service.</p>
+        <form class="waitlist-form" onsubmit="submitWaitlist(event)">
+          <input type="text" class="form-input" placeholder="Full Name" required id="wl-name">
+          <input type="email" class="form-input" placeholder="Secure Email Address" required id="wl-email">
+          <button type="submit" class="btn btn-gold">Submit Application</button>
+        </form>
+      </div>
+      <div class="waitlist-success" id="waitlist-success-container">
+        <h3>Application Received</h3>
+        <p style="margin-top:16px; font-family:var(--font-sans); font-size:0.9rem; color:var(--color-text-secondary);">
+          We have registered your invitation request. To ensure absolute confidentiality and bespoke detail, we limit membership to 50 active clients per quarter.
+        </p>
+        <p style="margin-top:10px; font-family:var(--font-sans); font-size:0.9rem; color:var(--color-text-secondary);">
+          A private relations specialist will reach out using a pgp-signed email should a deployment window open.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>EXECUTIVE ASSISTANT &copy; 2026. OPEN STANDARDS, PRIVACY-FIRST PERSONAL OPERATING SYSTEM.</p>
+  </footer>
+
+  <script>
+    function toggleWaitlistForm() {
+      const sec = document.getElementById('waitlist-section');
+      sec.classList.add('active');
+      sec.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function submitWaitlist(e) {
+      e.preventDefault();
+      const name = document.getElementById('wl-name').value;
+      const email = document.getElementById('wl-email').value;
+
+      if (name && email) {
+        document.getElementById('waitlist-form-container').style.display = 'none';
+        document.getElementById('waitlist-success-container').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
