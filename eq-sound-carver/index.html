@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-zinc-950 text-zinc-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQ Sound Carver - Phase Cancellation Synthesizer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for some UI icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar for synth aesthetics */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+        .knob-input {
+            cursor: ns-resize;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans select-none overflow-hidden">
+
+    <!-- Splash / Audio Unlock Screen -->
+    <div id="splashScreen" class="fixed inset-0 bg-zinc-950 z-50 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-500">
+        <div class="max-w-md w-full bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="w-20 h-20 bg-gradient-to-tr from-purple-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-wave-square text-3xl text-white"></i>
+            </div>
+            
+            <h1 class="text-2xl font-bold tracking-tight text-white mb-2">EQ Sound Carver</h1>
+            <p class="text-zinc-400 text-sm mb-6">
+                Inspired by Andy Brewer's YouTube masterpiece. This tool sculpts synthesizers, drum hits, and rhythms out of pure silence using phase-inverted pink noise and surgical equalizers.
+            </p>
+            
+            <button id="startEngineBtn" class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/10 transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-power-off"></i> Initialize Audio Engine
+            </button>
+            <p class="text-xs text-zinc-500 mt-4">Requires audio permissions. Best experienced with headphones.</p>
+        </div>
+    </div>
+
+    <!-- Main Navigation / Header -->
+    <header class="bg-zinc-900/80 border-b border-zinc-800 px-6 py-3 flex flex-wrap items-center justify-between gap-4 backdrop-blur-md z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-tr from-purple-600 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-wave-square text-sm text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm tracking-wide text-white flex items-center gap-2">
+                    EQ SOUND CARVER
+                    <span class="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded border border-purple-500/30">PRO-Q STYLE</span>
+                </h1>
+                <p class="text-[10px] text-zinc-400">Sculpting Music via Phase Cancellation</p>
+            </div>
+        </div>
+
+        <!-- Master Transport Controls -->
+        <div class="flex items-center gap-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800">
+            <button id="btnPlay" class="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors" title="Play">
+                <i class="fa-solid fa-play"></i>
+            </button>
+            <button id="btnStop" class="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors" title="Stop">
+                <i class="fa-solid fa-stop"></i>
+            </button>
+            <button id="btnRecord" class="w-9 h-9 flex items-center justify-center rounded-lg text-red-500/50 hover:text-red-500 hover:bg-zinc-900 transition-colors relative" title="Record Automation Movement">
+                <i class="fa-solid fa-circle"></i>
+                <span id="recordingIndicator" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+            </button>
+            
+            <div class="h-6 w-px bg-zinc-800 mx-1"></div>
+
+            <!-- Tempo Slider -->
+            <div class="flex items-center gap-2 px-2">
+                <span class="text-[10px] font-mono text-zinc-500">BPM</span>
+                <input type="number" id="bpmInput" value="120" min="60" max="200" class="w-12 bg-transparent text-center font-mono text-xs text-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 rounded">
+            </div>
+
+            <div class="h-6 w-px bg-zinc-800 mx-1"></div>
+
+            <!-- Playhead Position Display -->
+            <div class="px-2 font-mono text-xs text-zinc-400">
+                <span id="posBar">01</span>.<span id="posBeat">01</span>.<span id="posTick">00</span>
+            </div>
+        </div>
+
+        <!-- Preset Manager and Inversion Switch -->
+        <div class="flex items-center gap-3">
+            <!-- Phase Cancellation Toggle -->
+            <div class="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="togglePhase" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-300 after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+                <span class="text-xs text-zinc-400 font-medium">Phase Invert</span>
+            </div>
+
+            <!-- Presets Dropdown -->
+            <select id="presetSelect" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-200 px-3 py-1.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer">
+                <option value="none">-- Select Preset Composition --</option>
+                <option value="pulse">Ambient Pulses & Sizzle</option>
+                <option value="rhythm">Techno Beat (Kick & Hat)</option>
+                <option value="melody">Minimal Arp Progression</option>
+            </select>
+
+            <!-- Noise volume controls -->
+            <div class="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-800">
+                <i class="fa-solid fa-volume-high text-xs text-zinc-500"></i>
+                <input type="range" id="masterVolume" min="0" max="1" step="0.05" value="0.7" class="w-16 accent-purple-500 bg-zinc-800 h-1 rounded-lg appearance-none cursor-pointer">
+            </div>
+        </div>
+    </header>
+
+    <!-- Mid-Section Grid Layout (Workspace) -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- Left Pane: Surgical Equalizer Canvas (Main View) -->
+        <div class="flex-1 flex flex-col min-w-0 bg-zinc-950 relative border-r border-zinc-900">
+            <!-- Canvas Header Details -->
+            <div class="absolute top-4 left-6 flex items-center gap-6 z-10 pointer-events-none">
+                <div class="text-[11px] text-zinc-500 bg-zinc-900/80 px-2.5 py-1 rounded-md border border-zinc-800 flex items-center gap-2 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                    <span>Interactive Equalizer Response Line</span>
+                </div>
+                <div class="text-[11px] text-zinc-500 bg-zinc-900/80 px-2.5 py-1 rounded-md border border-zinc-800 flex items-center gap-2 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                    <span>Real-time Output Spectrum</span>
+                </div>
+            </div>
+
+            <div class="absolute top-4 right-6 flex items-center gap-2 z-10">
+                <button id="addNodeBtn" class="bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white px-3 py-1.5 text-xs font-semibold rounded-lg border border-purple-500/30 hover:border-purple-500 transition-all flex items-center gap-1.5 shadow-lg shadow-purple-500/5">
+                    <i class="fa-solid fa-plus"></i> Add EQ Carver Node
+                </button>
+            </div>
+
+            <!-- Equalizer Workspace Canvas -->
+            <div class="flex-1 relative">
+                <canvas id="eqCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            </div>
+
+            <!-- Live Filter Inspector Panel (Quick controls at bottom of canvas) -->
+            <div id="inspectorPanel" class="bg-zinc-900/90 border-t border-zinc-800 px-6 py-4 flex flex-wrap items-center justify-between gap-6 backdrop-blur-md">
+                <div class="flex items-center gap-4">
+                    <span class="text-xs font-bold text-zinc-400 tracking-wider">SELECTED CARVER</span>
+                    <input type="text" id="nodeLabel" value="Kick Drum" class="bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg text-xs font-medium text-white focus:ring-1 focus:ring-purple-500 focus:outline-none w-40">
+                    
+                    <select id="nodeType" class="bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg text-xs text-zinc-300 focus:ring-1 focus:ring-purple-500 focus:outline-none cursor-pointer">
+                        <option value="peaking">Peaking (Bell)</option>
+                        <option value="bandpass">Bandpass</option>
+                        <option value="highpass">Highpass</option>
+                        <option value="lowpass">Lowpass</option>
+                        <option value="notch">Notch</option>
+                    </select>
+
+                    <button id="nodeBypass" class="px-3 py-1.5 text-xs rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-ban"></i> Bypass
+                    </button>
+                </div>
+
+                <!-- Surgical Precision Rotary Control Knobs -->
+                <div class="flex items-center gap-8">
+                    <!-- Freq Knob -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Frequency</div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="freqInput" value="1000" min="20" max="20000" class="w-20 bg-zinc-950 text-center font-mono text-xs text-purple-400 border border-zinc-800 rounded-lg p-1">
+                            <span class="text-[10px] text-zinc-500 font-mono">Hz</span>
+                        </div>
+                    </div>
+
+                    <!-- Gain Knob -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Gain</div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="gainInput" value="12" min="-30" max="30" class="w-14 bg-zinc-950 text-center font-mono text-xs text-cyan-400 border border-zinc-800 rounded-lg p-1">
+                            <span class="text-[10px] text-zinc-500 font-mono">dB</span>
+                        </div>
+                    </div>
+
+                    <!-- Q-Factor Knob -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Q-Factor</div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="qInput" value="40" min="0.1" max="100" step="0.5" class="w-14 bg-zinc-950 text-center font-mono text-xs text-yellow-400 border border-zinc-800 rounded-lg p-1">
+                            <span class="text-[10px] text-zinc-500 font-mono">Q</span>
+                        </div>
+                    </div>
+
+                    <!-- Delete active node button -->
+                    <button id="deleteNodeBtn" class="p-2 text-zinc-500 hover:text-red-400 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors" title="Delete Carver Node">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Precision Keyframe Table (Numerical Tweaker) -->
+        <div class="w-full md:w-80 bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-zinc-800 flex items-center justify-between">
+                <span class="text-xs font-bold tracking-wider text-zinc-400 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ol text-purple-400"></i> KEYFRAME TWEAKER
+                </span>
+                <span class="text-[10px] text-zinc-500 font-mono" id="keyframeSelectedLabel">Select Parameter</span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Dropdown selector of which automated parameter to view/edit in table -->
+                <div class="space-y-1.5">
+                    <label class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Select Parameter Curve</label>
+                    <select id="paramSelector" class="w-full bg-zinc-950 border border-zinc-800 p-2 rounded-lg text-xs text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Live Keyframe Table Grid -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Precision Editor Grid</span>
+                        <button id="addManualKeyframeBtn" class="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Add Point
+                        </button>
+                    </div>
+
+                    <!-- Keyframe items list -->
+                    <div class="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950">
+                        <div class="grid grid-cols-3 gap-2 bg-zinc-900 p-2 text-[10px] font-bold text-zinc-500 uppercase text-center">
+                            <div>Beat Time</div>
+                            <div>Carved Value</div>
+                            <div>Actions</div>
+                        </div>
+                        <div id="keyframeTableList" class="divide-y divide-zinc-900 max-h-60 overflow-y-auto">
+                            <!-- Populated dynamically -->
+                            <div class="text-center py-6 text-xs text-zinc-600">No keyframes found on current track. Click record or double click the timeline.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wave Carver Simplification Filter (Clean up messy recordings) -->
+                <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-950 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-xs"></i>
+                        <h4 class="text-xs font-bold text-zinc-300">Clean Live Recording</h4>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 leading-relaxed">
+                        Recorded node movements generate many dots. Run this filter to simplify and smooth the curve into adjustable keyframes.
+                    </p>
+                    <button id="simplifyCurveBtn" class="w-full py-2 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-semibold transition-all">
+                        Run Optimization Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Pane: Automation Track Timeline (DAW Mode) -->
+    <footer class="bg-zinc-900 border-t border-zinc-800 flex flex-col relative">
+        <div class="px-6 py-2 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-bold tracking-wider text-zinc-400 flex items-center gap-2">
+                    <i class="fa-solid fa-timeline text-cyan-400"></i> AUTOMATION LANE
+                </span>
+                <span class="text-[10px] text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800" id="timelineActiveLabel">Active: Selected node parameter curve</span>
+            </div>
+            
+            <div class="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-mouse text-cyan-500"></i> Double-Click: Add Keyframe</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-arrows-up-down-left-right text-purple-500"></i> Drag: Adjust Beat / Value</span>
+            </div>
+        </div>
+
+        <div class="flex items-stretch h-40">
+            <!-- Parameter selector sidebar -->
+            <div class="w-48 bg-zinc-950 border-r border-zinc-800 flex flex-col justify-center p-4 gap-2">
+                <div class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">AUTOMATING</div>
+                <div class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-xs font-semibold text-purple-400" id="automatingTextLabel">
+                    No active curve
+                </div>
+                <div class="text-[9px] text-zinc-500 leading-relaxed mt-1">
+                    Select a Carver node and adjust parameters to view its timeline curve.
+                </div>
+            </div>
+
+            <!-- Scrollable Timeline Track Canvas -->
+            <div class="flex-1 relative bg-zinc-950 overflow-hidden">
+                <canvas id="timelineCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Slide-in Custom Notifications (No intrusive alerts) -->
+    <div id="notificationBanner" class="fixed bottom-6 right-6 bg-zinc-900 border border-purple-500/30 text-zinc-100 p-4 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        <div id="notificationIcon" class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+            <i class="fa-solid fa-info"></i>
+        </div>
+        <div>
+            <h5 class="text-xs font-bold text-white" id="notificationTitle">Sound Sculpting</h5>
+            <p class="text-[11px] text-zinc-400 mt-0.5" id="notificationBody">Notification message body.</p>
+        </div>
+    </div>
+
+    <!-- Core Audio Engine and UI Interaction Logic -->
+    <script>
+        // Global variables and elements
+        const splashScreen = document.getElementById('splashScreen');
+        const startEngineBtn = document.getElementById('startEngineBtn');
+        const btnPlay = document.getElementById('btnPlay');
+        const btnStop = document.getElementById('btnStop');
+        const btnRecord = document.getElementById('btnRecord');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const bpmInput = document.getElementById('bpmInput');
+        const togglePhase = document.getElementById('togglePhase');
+        const presetSelect = document.getElementById('presetSelect');
+        const masterVolume = document.getElementById('masterVolume');
+        const addNodeBtn = document.getElementById('addNodeBtn');
+        const deleteNodeBtn = document.getElementById('deleteNodeBtn');
+
+        const inspectorPanel = document.getElementById('inspectorPanel');
+        const nodeLabel = document.getElementById('nodeLabel');
+        const nodeType = document.getElementById('nodeType');
+        const nodeBypass = document.getElementById('nodeBypass');
+        const freqInput = document.getElementById('freqInput');
+        const gainInput = document.getElementById('gainInput');
+        const qInput = document.getElementById('qInput');
+
+        const paramSelector = document.getElementById('paramSelector');
+        const keyframeSelectedLabel = document.getElementById('keyframeSelectedLabel');
+        const keyframeTableList = document.getElementById('keyframeTableList');
+        const addManualKeyframeBtn = document.getElementById('addManualKeyframeBtn');
+        const simplifyCurveBtn = document.getElementById('simplifyCurveBtn');
+        const automatingTextLabel = document.getElementById('automatingTextLabel');
+
+        const eqCanvas = document.getElementById('eqCanvas');
+        const eqCtx = eqCanvas.getContext('2d');
+        const timelineCanvas = document.getElementById('timelineCanvas');
+        const timeCtx = timelineCanvas.getContext('2d');
+
+        // Web Audio global API contexts
+        let audioContext = null;
+        let pinkNoiseBuffer = null;
+        let noiseSource = null;
+        let dryGainNode = null;
+        let wetGainNode = null;
+        let masterGainNode = null;
+        let analyserNode = null;
+
+        // Sound carving nodes array & active variables
+        let carverNodes = [];
+        let activeNodeId = null;
+        let activeParam = 'frequency'; // 'frequency', 'gain', or 'Q'
+
+        // Map for active biquad nodes linked to carvers: carverNodes[i].id -> BiquadFilterNode
+        let filterAudioMap = {};
+
+        // Sequencer & Transport playback settings
+        let isPlaying = false;
+        let isRecording = false;
+        let bpm = 120;
+        let totalBeats = 16; // 4 Bars at 4/4
+        let playheadTime = 0.0; // In Beats (0 to 16)
+        let lastTimeUpdated = 0.0; // Performance timer high-res
+        let sequencerTimer = null;
+
+        // Preset databases
+        let presetData = {
+            pulse: {
+                nodes: [
+                    { id: 'n1', label: 'Bass Pulsar', type: 'peaking', frequency: 120, gain: 18, Q: 35, bypassed: false },
+                    { id: 'n2', label: 'Metallic Sizzle', type: 'bandpass', frequency: 11000, gain: 12, Q: 20, bypassed: false }
+                ],
+                curves: {
+                    'n1_frequency': [
+                        { time: 0, value: 80 }, { time: 4, value: 160 }, { time: 8, value: 80 }, { time: 12, value: 240 }, { time: 16, value: 80 }
+                    ],
+                    'n1_gain': [
+                        { time: 0, value: 18 }, { time: 2, value: -12 }, { time: 4, value: 18 }, { time: 6, value: -12 },
+                        { time: 8, value: 18 }, { time: 10, value: -12 }, { time: 12, value: 18 }, { time: 14, value: -12 }, { time: 16, value: 18 }
+                    ],
+                    'n2_frequency': [
+                        { time: 0, value: 11000 }, { time: 8, value: 8000 }, { time: 16, value: 11000 }
+                    ],
+                    'n2_gain': [
+                        { time: 0, value: 14 }, { time: 1, value: -15 }, { time: 2, value: 14 }, { time: 3, value: -15 },
+                        { time: 4, value: 14 }, { time: 5, value: -15 }, { time: 6, value: 14 }, { time: 7, value: -15 },
+                        { time: 8, value: 14 }, { time: 9, value: -15 }, { time: 10, value: 14 }, { time: 11, value: -15 },
+                        { time: 12, value: 14 }, { time: 13, value: -15 }, { time: 14, value: 14 }, { time: 15, value: -15 }, { time: 16, value: 14 }
+                    ]
+                }
+            },
+            rhythm: {
+                nodes: [
+                    { id: 'r1', label: 'Kick Carver', type: 'peaking', frequency: 60, gain: 24, Q: 45, bypassed: false },
+                    { id: 'r2', label: 'Shaker Band', type: 'bandpass', frequency: 9500, gain: 15, Q: 15, bypassed: false }
+                ],
+                curves: {
+                    'r1_frequency': [
+                        { time: 0, value: 250 }, { time: 0.8, value: 55 }, { time: 1.5, value: 45 },
+                        { time: 4, value: 250 }, { time: 4.8, value: 55 }, { time: 5.5, value: 45 },
+                        { time: 8, value: 250 }, { time: 8.8, value: 55 }, { time: 9.5, value: 45 },
+                        { time: 12, value: 250 }, { time: 12.8, value: 55 }, { time: 13.5, value: 45 }, { time: 16, value: 250 }
+                    ],
+                    'r1_gain': [
+                        { time: 0, value: 24 }, { time: 0.8, value: 24 }, { time: 1.5, value: -15 },
+                        { time: 4, value: 24 }, { time: 4.8, value: 24 }, { time: 5.5, value: -15 },
+                        { time: 8, value: 24 }, { time: 8.8, value: 24 }, { time: 9.5, value: -15 },
+                        { time: 12, value: 24 }, { time: 12.8, value: 24 }, { time: 13.5, value: -15 }, { time: 16, value: 24 }
+                    ],
+                    'r2_gain': [
+                        { time: 0, value: -15 }, { time: 2, value: 18 }, { time: 2.5, value: -15 },
+                        { time: 6, value: 18 }, { time: 6.5, value: -15 }, { time: 10, value: 18 },
+                        { time: 10.5, value: -15 }, { time: 14, value: 18 }, { time: 14.5, value: -15 }, { time: 16, value: -15 }
+                    ]
+                }
+            },
+            melody: {
+                nodes: [
+                    { id: 'm1', label: 'Arpeggiator', type: 'peaking', frequency: 261.63, gain: 22, Q: 80, bypassed: false }
+                ],
+                curves: {
+                    'm1_frequency': [
+                        // Quick eighth-note pitch jumps carving C, E, G, C chords out of the noise
+                        { time: 0, value: 261.63 }, // C4
+                        { time: 2, value: 329.63 }, // E4
+                        { time: 4, value: 392.00 }, // G4
+                        { time: 6, value: 523.25 }, // C5
+                        { time: 8, value: 349.23 }, // F4
+                        { time: 10, value: 440.00 }, // A4
+                        { time: 12, value: 523.25 }, // C5
+                        { time: 14, value: 587.33 }, // D5
+                        { time: 16, value: 261.63 }
+                    ],
+                    'm1_gain': [
+                        { time: 0, value: 22 }, { time: 1.8, value: 22 }, { time: 1.9, value: -15 },
+                        { time: 2, value: 22 }, { time: 3.8, value: 22 }, { time: 3.9, value: -15 },
+                        { time: 4, value: 22 }, { time: 5.8, value: 22 }, { time: 5.9, value: -15 },
+                        { time: 6, value: 22 }, { time: 7.8, value: 22 }, { time: 7.9, value: -15 },
+                        { time: 8, value: 22 }, { time: 9.8, value: 22 }, { time: 9.9, value: -15 },
+                        { time: 10, value: 22 }, { time: 11.8, value: 22 }, { time: 11.9, value: -15 },
+                        { time: 12, value: 22 }, { time: 13.8, value: 22 }, { time: 13.9, value: -15 },
+                        { time: 14, value: 22 }, { time: 15.8, value: 22 }, { time: 15.9, value: -15 }, { time: 16, value: 22 }
+                    ]
+                }
+            }
+        };
+
+        // Complete Automation storage mapping
+        // Structure: { 'nodeId_parameterName': [ { time: Beat, value: Float }, ... ] }
+        let automationCurves = {};
+
+        // Canvas interactions state variables
+        let draggedNode = null;
+        let isDraggingTimeline = false;
+        let activeKeyframeIndex = null;
+
+        // Interactive frequency ranges
+        const minFreq = 20;
+        const maxFreq = 20000;
+        const mindB = -30;
+        const maxdB = 30;
+
+        // Custom Slide-in Toast Notification Engine
+        function showNotification(title, message, iconType = 'info') {
+            const banner = document.getElementById('notificationBanner');
+            const iconElem = document.getElementById('notificationIcon');
+            const titleElem = document.getElementById('notificationTitle');
+            const bodyElem = document.getElementById('notificationBody');
+            
+            // Set icon
+            if (iconType === 'success') {
+                iconElem.innerHTML = '<i class="fa-solid fa-check"></i>';
+                iconElem.className = 'w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center';
+            } else if (iconType === 'alert') {
+                iconElem.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                iconElem.className = 'w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center';
+            } else {
+                iconElem.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+                iconElem.className = 'w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center';
+            }
+            
+            titleElem.textContent = title;
+            bodyElem.textContent = message;
+            
+            // Slide in
+            banner.style.transform = 'translateY(0px)';
+            banner.style.opacity = '1';
+            
+            setTimeout(() => {
+                banner.style.transform = 'translateY(100px)';
+                banner.style.opacity = '0';
+            }, 3500);
+        }
+
+        // Mathematical Voss-McCartney Pink Noise Approximation Algorithm
+        function generatePinkNoiseBuffer(ctx, duration = 10) {
+            const bufferSize = ctx.sampleRate * duration;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                const pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                b6 = white * 0.115926;
+                data[i] = pink * 0.12; // Compensated signal level
+            }
+            return buffer;
+        }
+
+        // Initialize Audio Engine Components
+        function initAudioEngine() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContextClass();
+                
+                // Audio analysis node
+                analyserNode = audioContext.createAnalyser();
+                analyserNode.fftSize = 2048;
+                analyserNode.smoothingTimeConstant = 0.75;
+
+                // Output gain node
+                masterGainNode = audioContext.createGain();
+                masterGainNode.gain.setValueAtTime(parseFloat(masterVolume.value), audioContext.currentTime);
+
+                // Setup noise source looping
+                pinkNoiseBuffer = generatePinkNoiseBuffer(audioContext, 8); // 8-second seamless noise buffer
+                noiseSource = audioContext.createBufferSource();
+                noiseSource.buffer = pinkNoiseBuffer;
+                noiseSource.loop = true;
+
+                // Split signal paths
+                dryGainNode = audioContext.createGain();
+                dryGainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Positive Dry Signal
+
+                wetGainNode = audioContext.createGain();
+                // Phase-inverted Dry Signal (Inversion = -180 degrees)
+                wetGainNode.gain.setValueAtTime(-0.5, audioContext.currentTime);
+
+                // Connections
+                noiseSource.connect(dryGainNode);
+                noiseSource.connect(wetGainNode);
+
+                dryGainNode.connect(masterGainNode);
+                // The wet signal routing path must flow through any surgical filter nodes we instantiate
+                rebuildFilterAudioRoute();
+
+                masterGainNode.connect(analyserNode);
+                analyserNode.connect(audioContext.destination);
+
+                noiseSource.start();
+                showNotification("Audio System Live", "Voss-McCartney engine initialized successfully.", "success");
+            } catch (err) {
+                console.error("Audio initialization error: ", err);
+                showNotification("Initialization Failed", "Your browser could not initialize AudioContext.", "alert");
+            }
+        }
+
+        // Surgical Audio Filter Routing Rebuild
+        function rebuildFilterAudioRoute() {
+            if (!audioContext) return;
+
+            // Disconnect old wet paths
+            try {
+                wetGainNode.disconnect();
+            } catch(e){}
+
+            // Disconnect all filters dynamically
+            for (let id in filterAudioMap) {
+                try {
+                    filterAudioMap[id].disconnect();
+                } catch(e){}
+            }
+
+            // Clean obsolete filter maps
+            filterAudioMap = {};
+
+            // Connect in series wetGainNode -> Filter1 -> Filter2 -> ... -> masterGainNode
+            let activeFilters = carverNodes.filter(node => !node.bypassed);
+
+            if (activeFilters.length === 0) {
+                // If zero filters, direct phase inversion cancellation: dryGainNode (0.5) + wetGainNode (-0.5) = silence
+                wetGainNode.connect(masterGainNode);
+            } else {
+                let previousNode = wetGainNode;
+                
+                activeFilters.forEach(node => {
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = node.type;
+                    filter.frequency.setValueAtTime(node.frequency, audioContext.currentTime);
+                    filter.gain.setValueAtTime(node.gain, audioContext.currentTime);
+                    filter.Q.setValueAtTime(node.Q, audioContext.currentTime);
+
+                    filterAudioMap[node.id] = filter;
+                    previousNode.connect(filter);
+                    previousNode = filter;
+                });
+
+                // Final filter in the surgical chain hooks to master output
+                previousNode.connect(masterGainNode);
+            }
+        }
+
+        // Active node creation & management utilities
+        function createCarverNode(label, type, freq, gain, Q) {
+            const id = 'n_' + Date.now() + Math.floor(Math.random() * 100);
+            const newNode = {
+                id: id,
+                label: label,
+                type: type || 'peaking',
+                frequency: freq || 1000,
+                gain: gain || 12,
+                Q: Q || 15,
+                bypassed: false
+            };
+
+            carverNodes.push(newNode);
+            
+            // Set base default flat curves
+            automationCurves[`${id}_frequency`] = [{ time: 0, value: newNode.frequency }, { time: 16, value: newNode.frequency }];
+            automationCurves[`${id}_gain`] = [{ time: 0, value: newNode.gain }, { time: 16, value: newNode.gain }];
+            automationCurves[`${id}_Q`] = [{ time: 0, value: newNode.Q }, { time: 16, value: newNode.Q }];
+
+            activeNodeId = id;
+            rebuildFilterAudioRoute();
+            updateParamDropdown();
+            updateSelectedInspector();
+            showNotification("Carver Node Created", `"${label}" carved out of the noise floor.`, "success");
+            return newNode;
+        }
+
+        function deleteActiveNode() {
+            if (!activeNodeId) return;
+            const nodeIndex = carverNodes.findIndex(node => node.id === activeNodeId);
+            if (nodeIndex === -1) return;
+
+            const label = carverNodes[nodeIndex].label;
+            
+            // Purge curves
+            delete automationCurves[`${activeNodeId}_frequency`];
+            delete automationCurves[`${activeNodeId}_gain`];
+            delete automationCurves[`${activeNodeId}_Q`];
+
+            carverNodes.splice(nodeIndex, 1);
+            activeNodeId = carverNodes.length > 0 ? carverNodes[0].id : null;
+            
+            rebuildFilterAudioRoute();
+            updateParamDropdown();
+            updateSelectedInspector();
+            showNotification("Node Purged", `"${label}" has been removed.`, "alert");
+        }
+
+        // Synchronize selected element inputs and inspector
+        function updateSelectedInspector() {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (!active) {
+                inspectorPanel.classList.add('opacity-40', 'pointer-events-none');
+                return;
+            }
+            inspectorPanel.classList.remove('opacity-40', 'pointer-events-none');
+
+            nodeLabel.value = active.label;
+            nodeType.value = active.type;
+            
+            nodeBypass.className = active.bypassed 
+                ? "px-3 py-1.5 text-xs rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex items-center gap-1"
+                : "px-3 py-1.5 text-xs rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-1";
+
+            freqInput.value = Math.round(active.frequency);
+            gainInput.value = Math.round(active.gain);
+            qInput.value = active.Q;
+            
+            // Adjust dropdown parameter syncing
+            if (activeParam) {
+                const targetValue = `${active.id}_${activeParam}`;
+                if (paramSelector.value !== targetValue) {
+                    paramSelector.value = targetValue;
+                    updateKeyframeListTable();
+                }
+            }
+        }
+
+        function updateParamDropdown() {
+            paramSelector.innerHTML = '';
+            if (carverNodes.length === 0) {
+                paramSelector.innerHTML = '<option value="none">No Carver Nodes</option>';
+                automatingTextLabel.textContent = "No active curve";
+                return;
+            }
+
+            carverNodes.forEach(node => {
+                const fOpt = document.createElement('option');
+                fOpt.value = `${node.id}_frequency`;
+                fOpt.textContent = `[${node.label}] - Frequency (Hz)`;
+                paramSelector.appendChild(fOpt);
+
+                const gOpt = document.createElement('option');
+                gOpt.value = `${node.id}_gain`;
+                gOpt.textContent = `[${node.label}] - Gain (dB)`;
+                paramSelector.appendChild(gOpt);
+
+                const qOpt = document.createElement('option');
+                qOpt.value = `${node.id}_Q`;
+                qOpt.textContent = `[${node.label}] - Q-Factor`;
+                paramSelector.appendChild(qOpt);
+            });
+
+            // Set default choice
+            if (activeNodeId) {
+                paramSelector.value = `${activeNodeId}_${activeParam}`;
+                const sel = carverNodes.find(n => n.id === activeNodeId);
+                automatingTextLabel.textContent = sel ? `${sel.label} - ${activeParam.toUpperCase()}` : "No active curve";
+            }
+            updateKeyframeListTable();
+        }
+
+        // Mathematical logarithmic helper conversions
+        function logFreqToX(freq, width) {
+            const minLog = Math.log(minFreq);
+            const maxLog = Math.log(maxFreq);
+            return width * (Math.log(freq) - minLog) / (maxLog - minLog);
+        }
+
+        function xToLogFreq(x, width) {
+            const minLog = Math.log(minFreq);
+            const maxLog = Math.log(maxFreq);
+            return Math.exp(minLog + (x / width) * (maxLog - minLog));
+        }
+
+        function gainToY(gain, height) {
+            const range = maxdB - mindB;
+            const norm = (gain - mindB) / range;
+            return height - (norm * height);
+        }
+
+        function yToGain(y, height) {
+            const range = maxdB - mindB;
+            const norm = (height - y) / height;
+            return mindB + norm * range;
+        }
+
+        // Automated interpolation algorithm
+        function getAutomatedValue(nodeId, parameter, beat) {
+            const curve = automationCurves[`${nodeId}_${parameter}`];
+            if (!curve || curve.length === 0) return null;
+
+            // Sort points ascending in beat time
+            curve.sort((a, b) => a.time - b.time);
+
+            if (beat <= curve[0].time) return curve[0].value;
+            if (beat >= curve[curve.length - 1].time) return curve[curve.length - 1].value;
+
+            for (let i = 0; i < curve.length - 1; i++) {
+                const k1 = curve[i];
+                const k2 = curve[i+1];
+                if (beat >= k1.time && beat <= k2.time) {
+                    // Precise linear interpolation curve math
+                    const t = (beat - k1.time) / (k2.time - k1.time);
+                    return k1.value + t * (k2.value - k1.value);
+                }
+            }
+            return null;
+        }
+
+        // Timeline playback updates
+        function updateTimelineParameters() {
+            if (!isPlaying) return;
+
+            carverNodes.forEach(node => {
+                if (node.bypassed) return;
+
+                ['frequency', 'gain', 'Q'].forEach(param => {
+                    const val = getAutomatedValue(node.id, param, playheadTime);
+                    if (val !== null) {
+                        node[param] = val;
+
+                        // Send parameter values to biquad filter node
+                        const filter = filterAudioMap[node.id];
+                        if (filter) {
+                            if (param === 'frequency') filter.frequency.setValueAtTime(val, audioContext.currentTime);
+                            if (param === 'gain') filter.gain.setValueAtTime(val, audioContext.currentTime);
+                            if (param === 'Q') filter.Q.setValueAtTime(val, audioContext.currentTime);
+                        }
+                    }
+                });
+            });
+
+            // If we are recording live node changes
+            if (isRecording && draggedNode) {
+                recordKeyframe(draggedNode.id, 'frequency', playheadTime, draggedNode.frequency);
+                recordKeyframe(draggedNode.id, 'gain', playheadTime, draggedNode.gain);
+            }
+
+            updateSelectedInspector();
+        }
+
+        function recordKeyframe(nodeId, param, time, value) {
+            const key = `${nodeId}_${param}`;
+            if (!automationCurves[key]) automationCurves[key] = [];
+
+            // Discard duplicate points at same tick
+            const roundedTime = Math.round(time * 100) / 100;
+            const index = automationCurves[key].findIndex(k => Math.abs(k.time - roundedTime) < 0.05);
+
+            if (index !== -1) {
+                automationCurves[key][index].value = value;
+            } else {
+                automationCurves[key].push({ time: roundedTime, value: value });
+            }
+
+            automationCurves[key].sort((a, b) => a.time - b.time);
+            updateKeyframeListTable();
+        }
+
+        // Smooth Dougluas-Peucker automation curve simplification algorithm
+        function simplifyCurveBtnHandler() {
+            const curveKey = paramSelector.value;
+            if (!curveKey || !automationCurves[curveKey]) {
+                showNotification("No Curve", "Select a parameter curve to clean up.", "alert");
+                return;
+            }
+
+            let curve = automationCurves[curveKey];
+            if (curve.length <= 4) {
+                showNotification("Curve Clean", "Curve is already highly optimized.", "success");
+                return;
+            }
+
+            // Run simple Ramer-Douglas-Peucker reduction (epsilon tolerance filtering)
+            const tolerance = curveKey.includes('frequency') ? 35 : 1.2; // tighter for DB/Q, higher for Freq
+            const simplified = rdpSimplify(curve, tolerance);
+
+            automationCurves[curveKey] = simplified;
+            updateKeyframeListTable();
+            showNotification("Optimization Success", `Simplified track points from ${curve.length} down to ${simplified.length}.`, "success");
+        }
+
+        function rdpSimplify(points, epsilon) {
+            if (points.length <= 2) return points;
+
+            // Sort points
+            points.sort((a, b) => a.time - b.time);
+
+            let maxDistance = 0;
+            let index = 0;
+            const end = points.length - 1;
+
+            for (let i = 1; i < end; i++) {
+                const distance = getPerpendicularDistance(points[i], points[0], points[end]);
+                if (distance > maxDistance) {
+                    index = i;
+                    maxDistance = distance;
+                }
+            }
+
+            if (maxDistance > epsilon) {
+                const results1 = rdpSimplify(points.slice(0, index + 1), epsilon);
+                const results2 = rdpSimplify(points.slice(index), epsilon);
+                return results1.slice(0, results1.length - 1).concat(results2);
+            } else {
+                return [points[0], points[end]];
+            }
+        }
+
+        function getPerpendicularDistance(p, p1, p2) {
+            // Transform scale so time differences are proportionally matched to frequency/amplitude values
+            const x = p.time * 100;
+            const y = p.value;
+            const x1 = p1.time * 100;
+            const y1 = p1.value;
+            const x2 = p2.time * 100;
+            const y2 = p2.value;
+
+            const num = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
+            const den = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+            return den === 0 ? 0 : num / den;
+        }
+
+        // Rendering main fabfilter visualizer curves
+        function drawEQGrid() {
+            const w = eqCanvas.width;
+            const h = eqCanvas.height;
+
+            eqCtx.fillStyle = '#09090b';
+            eqCtx.fillRect(0, 0, w, h);
+
+            // Grid guidelines style
+            eqCtx.strokeStyle = '#18181b';
+            eqCtx.lineWidth = 1;
+
+            // Draw Frequency guides logarithmic
+            const freqGuides = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+            freqGuides.forEach(f => {
+                const x = logFreqToX(f, w);
+                eqCtx.beginPath();
+                eqCtx.moveTo(x, 0);
+                eqCtx.lineTo(x, h);
+                eqCtx.stroke();
+
+                // Labels
+                eqCtx.fillStyle = '#52525b';
+                eqCtx.font = '9px monospace';
+                let label = f >= 1000 ? (f / 1000) + 'kHz' : f + 'Hz';
+                eqCtx.fillText(label, x + 4, h - 10);
+            });
+
+            // Draw Gain Guides dB linear
+            const gainGuides = [-24, -18, -12, -6, 0, 6, 12, 18, 24];
+            gainGuides.forEach(g => {
+                const y = gainToY(g, h);
+                eqCtx.beginPath();
+                eqCtx.moveTo(0, y);
+                eqCtx.lineTo(w, y);
+                eqCtx.stroke();
+
+                // Labels
+                eqCtx.fillStyle = g === 0 ? '#71717a' : '#3f3f46';
+                eqCtx.font = '9px monospace';
+                let sign = g > 0 ? '+' : '';
+                eqCtx.fillText(sign + g + 'dB', 10, y - 4);
+            });
+        }
+
+        function drawFFTSpectrum() {
+            if (!analyserNode) return;
+            const bufferLength = analyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyserNode.getByteFrequencyData(dataArray);
+
+            const w = eqCanvas.width;
+            const h = eqCanvas.height;
+
+            eqCtx.beginPath();
+            eqCtx.moveTo(0, h);
+
+            for (let x = 0; x < w; x++) {
+                // Compute corresponding log frequency
+                const f = xToLogFreq(x, w);
+                // Convert to FFT bin
+                const bin = Math.round(f * bufferLength / (audioContext.sampleRate / 2));
+                const value = dataArray[bin] || 0;
+                
+                // Map amplitude value to DB heights
+                const normVal = value / 255;
+                const dbMappedY = h - (normVal * h * 0.85);
+
+                if (x === 0) {
+                    eqCtx.moveTo(x, dbMappedY);
+                } else {
+                    eqCtx.lineTo(x, dbMappedY);
+                }
+            }
+
+            eqCtx.lineTo(w, h);
+            eqCtx.lineTo(0, h);
+            eqCtx.closePath();
+
+            // Premium translucent purple neon glow
+            const gradient = eqCtx.createLinearGradient(0, 0, 0, h);
+            gradient.addColorStop(0, 'rgba(168, 85, 247, 0.15)');
+            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+            eqCtx.fillStyle = gradient;
+            eqCtx.fill();
+
+            eqCtx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+            eqCtx.lineWidth = 1.5;
+            eqCtx.stroke();
+        }
+
+        // Calculate combined transfer frequency response curve
+        function drawCumulativeEQCurve() {
+            const w = eqCanvas.width;
+            const h = eqCanvas.height;
+
+            // Generate an array of analytical frequencies
+            const pointsCount = w;
+            const freqArray = new Float32Array(pointsCount);
+            for (let i = 0; i < pointsCount; i++) {
+                freqArray[i] = xToLogFreq(i, w);
+            }
+
+            // Sum up mathematical frequency responses
+            const finalMagResponse = new Float32Array(pointsCount);
+            // Default initial response is flat flat flat (1.0 gain in linear amplitude scale)
+            finalMagResponse.fill(1.0);
+
+            // Temporary variables for biquad frequency calculation calculations
+            const dummyCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100, 44100);
+
+            let activeFilters = carverNodes.filter(node => !node.bypassed);
+
+            if (activeFilters.length > 0) {
+                activeFilters.forEach(node => {
+                    const tempFilter = dummyCtx.createBiquadFilter();
+                    tempFilter.type = node.type;
+                    tempFilter.frequency.value = node.frequency;
+                    tempFilter.gain.value = node.gain;
+                    tempFilter.Q.value = node.Q;
+
+                    const magResponse = new Float32Array(pointsCount);
+                    const phaseResponse = new Float32Array(pointsCount);
+                    tempFilter.getFrequencyResponse(freqArray, magResponse, phaseResponse);
+
+                    for (let i = 0; i < pointsCount; i++) {
+                        finalMagResponse[i] *= magResponse[i];
+                    }
+                });
+            }
+
+            // Render final glowing response yellow curve line
+            eqCtx.beginPath();
+            for (let x = 0; x < w; x++) {
+                // Translate linear scale response amplitude multiplier to DB
+                let gainDb = 20 * Math.log10(finalMagResponse[x]);
+                if (isNaN(gainDb) || !isFinite(gainDb)) gainDb = 0;
+
+                const y = gainToY(gainDb, h);
+                if (x === 0) {
+                    eqCtx.moveTo(x, y);
+                } else {
+                    eqCtx.lineTo(x, y);
+                }
+            }
+
+            eqCtx.strokeStyle = 'rgba(234, 179, 8, 0.85)'; // Yellow curves glow
+            eqCtx.lineWidth = 2.5;
+            eqCtx.shadowColor = 'rgba(234, 179, 8, 0.4)';
+            eqCtx.shadowBlur = 8;
+            eqCtx.stroke();
+            eqCtx.shadowBlur = 0; // Reset canvas glow shadows
+        }
+
+        // Draw Interactive surgical Handles / Carver nodes
+        function drawCarverNodes() {
+            const w = eqCanvas.width;
+            const h = eqCanvas.height;
+
+            carverNodes.forEach(node => {
+                const x = logFreqToX(node.frequency, w);
+                const y = gainToY(node.gain, h);
+                const isActive = (node.id === activeNodeId);
+
+                // Highlight color matching index style
+                const baseColor = isActive ? '#a855f7' : '#06b6d4'; // Active is purple, other is cyan
+
+                // Outlying pulse ring
+                eqCtx.beginPath();
+                eqCtx.arc(x, y, isActive ? 16 : 10, 0, 2 * Math.PI);
+                eqCtx.fillStyle = isActive ? 'rgba(168, 85, 247, 0.15)' : 'rgba(6, 182, 212, 0.1)';
+                eqCtx.fill();
+                eqCtx.strokeStyle = baseColor;
+                eqCtx.lineWidth = isActive ? 2.5 : 1.5;
+                eqCtx.stroke();
+
+                // Inner core dot
+                eqCtx.beginPath();
+                eqCtx.arc(x, y, 4, 0, 2 * Math.PI);
+                eqCtx.fillStyle = '#ffffff';
+                eqCtx.fill();
+
+                // Floating title parameter labels above nodes (Pro-Q style!)
+                eqCtx.fillStyle = isActive ? '#ffffff' : '#a1a1aa';
+                eqCtx.font = 'bold 10px sans-serif';
+                eqCtx.textAlign = 'center';
+                
+                let labelText = `${node.label} (${Math.round(node.frequency)}Hz)`;
+                if (node.bypassed) labelText += " [Bypassed]";
+
+                eqCtx.fillText(labelText, x, y - (isActive ? 22 : 16));
+            });
+        }
+
+        // Combined visual render cycle loop
+        function drawEQCanvas() {
+            // Match canvas coordinates to responsive window scale
+            const rect = eqCanvas.parentNode.getBoundingClientRect();
+            if (eqCanvas.width !== rect.width || eqCanvas.height !== rect.height) {
+                eqCanvas.width = rect.width;
+                eqCanvas.height = rect.height;
+            }
+
+            drawEQGrid();
+            drawFFTSpectrum();
+            drawCumulativeEQCurve();
+            drawCarverNodes();
+
+            requestAnimationFrame(drawEQCanvas);
+        }
+
+        // Timeline Automation Grid rendering
+        function drawTimelineGrid(w, h) {
+            timeCtx.fillStyle = '#09090b';
+            timeCtx.fillRect(0, 0, w, h);
+
+            // Draw Beat guidelines vertical stripes
+            timeCtx.strokeStyle = '#18181b';
+            timeCtx.lineWidth = 1;
+
+            const beatWidth = w / totalBeats;
+
+            for (let i = 0; i <= totalBeats; i++) {
+                const x = i * beatWidth;
+                
+                // Color accent bar markings (beat 1 of bar)
+                const isBar = (i % 4 === 0);
+                timeCtx.strokeStyle = isBar ? '#27272a' : '#0f0f12';
+                
+                timeCtx.beginPath();
+                timeCtx.moveTo(x, 0);
+                timeCtx.lineTo(x, h);
+                timeCtx.stroke();
+
+                if (i < totalBeats) {
+                    timeCtx.fillStyle = isBar ? '#a1a1aa' : '#52525b';
+                    timeCtx.font = '10px monospace';
+                    const barNum = Math.floor(i / 4) + 1;
+                    const beatNum = (i % 4) + 1;
+                    timeCtx.fillText(`${barNum}.${beatNum}`, x + 5, 15);
+                }
+            }
+
+            // Draw center reference horizontal rule
+            timeCtx.strokeStyle = '#27272a';
+            timeCtx.beginPath();
+            timeCtx.moveTo(0, h / 2);
+            timeCtx.lineTo(w, h / 2);
+            timeCtx.stroke();
+        }
+
+        function drawTimelineCurve(w, h) {
+            const activeKey = paramSelector.value;
+            if (!activeKey || !automationCurves[activeKey]) return;
+
+            const curve = automationCurves[activeKey];
+            if (curve.length === 0) return;
+
+            // Sort points
+            curve.sort((a, b) => a.time - b.time);
+
+            // Range factors
+            let minVal = mindB, maxVal = maxdB; // Default gain mapping range
+            if (activeKey.includes('frequency')) {
+                minVal = minFreq;
+                maxVal = maxFreq;
+            } else if (activeKey.includes('Q')) {
+                minVal = 0.1;
+                maxVal = 100;
+            }
+
+            // Convert point mapping
+            function pointToX(pointTime) {
+                return (pointTime / totalBeats) * w;
+            }
+
+            function valueToY(pointVal) {
+                let norm = 0;
+                if (activeKey.includes('frequency')) {
+                    // Log frequency distribution map over vertical heights
+                    const minL = Math.log(minFreq);
+                    const maxL = Math.log(maxFreq);
+                    norm = (Math.log(pointVal) - minL) / (maxL - minL);
+                } else {
+                    norm = (pointVal - minVal) / (maxVal - minVal);
+                }
+                return h - 25 - (norm * (h - 45)); // Padded bounds
+            }
+
+            // Draw line curve
+            timeCtx.beginPath();
+            curve.forEach((pt, idx) => {
+                const x = pointToX(pt.time);
+                const y = valueToY(pt.value);
+
+                if (idx === 0) {
+                    timeCtx.moveTo(x, y);
+                } else {
+                    timeCtx.lineTo(x, y);
+                }
+            });
+
+            timeCtx.strokeStyle = '#06b6d4'; // Cyan automation lines
+            timeCtx.lineWidth = 2.5;
+            timeCtx.stroke();
+
+            // Fill automation lane shading
+            timeCtx.lineTo(pointToX(curve[curve.length - 1].time), h);
+            timeCtx.lineTo(pointToX(curve[0].time), h);
+            timeCtx.closePath();
+            
+            const grad = timeCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, 'rgba(6, 182, 212, 0.08)');
+            grad.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+            timeCtx.fillStyle = grad;
+            timeCtx.fill();
+
+            // Draw Interactive Dots
+            curve.forEach((pt, idx) => {
+                const x = pointToX(pt.time);
+                const y = valueToY(pt.value);
+
+                const isSelected = (idx === activeKeyframeIndex);
+
+                timeCtx.beginPath();
+                timeCtx.arc(x, y, isSelected ? 6 : 4.5, 0, 2 * Math.PI);
+                timeCtx.fillStyle = isSelected ? '#ffffff' : '#06b6d4';
+                timeCtx.strokeStyle = '#0891b2';
+                timeCtx.lineWidth = 1.5;
+                timeCtx.fill();
+                timeCtx.stroke();
+            });
+        }
+
+        function drawPlayhead(w, h) {
+            const x = (playheadTime / totalBeats) * w;
+
+            timeCtx.strokeStyle = '#ea580c'; // Orange playhead line
+            timeCtx.lineWidth = 2;
+            timeCtx.beginPath();
+            timeCtx.moveTo(x, 0);
+            timeCtx.lineTo(x, h);
+            timeCtx.stroke();
+
+            // Triangle flag handle
+            timeCtx.fillStyle = '#ea580c';
+            timeCtx.beginPath();
+            timeCtx.moveTo(x - 5, 0);
+            timeCtx.lineTo(x + 5, 0);
+            timeCtx.lineTo(x, 8);
+            timeCtx.closePath();
+            timeCtx.fill();
+        }
+
+        function drawTimelineCanvas() {
+            const rect = timelineCanvas.parentNode.getBoundingClientRect();
+            if (timelineCanvas.width !== rect.width || timelineCanvas.height !== rect.height) {
+                timelineCanvas.width = rect.width;
+                timelineCanvas.height = rect.height;
+            }
+
+            const w = timelineCanvas.width;
+            const h = timelineCanvas.height;
+
+            drawTimelineGrid(w, h);
+            drawTimelineCurve(w, h);
+            drawPlayhead(w, h);
+
+            requestAnimationFrame(drawTimelineCanvas);
+        }
+
+        // Playhead Time Clock Sync
+        function stepSequencer() {
+            if (!isPlaying) return;
+
+            const now = performance.now();
+            const elapsedSeconds = (now - lastTimeUpdated) / 1000;
+            lastTimeUpdated = now;
+
+            // Beats per second = BPM / 60
+            const beatsPerSecond = bpm / 60;
+            playheadTime += elapsedSeconds * beatsPerSecond;
+
+            // Playback Loop range
+            if (playheadTime >= totalBeats) {
+                playheadTime = 0.0;
+            }
+
+            updateClockUI();
+            updateTimelineParameters();
+        }
+
+        function updateClockUI() {
+            const beatInt = Math.floor(playheadTime) + 1;
+            const subBeatInt = Math.floor((playheadTime % 1) * 4) + 1;
+            const ticks = Math.floor(((playheadTime % 1) * 4 % 1) * 100);
+
+            const bar = Math.floor((beatInt - 1) / 4) + 1;
+            const beatInBar = ((beatInt - 1) % 4) + 1;
+
+            document.getElementById('posBar').textContent = String(bar).padStart(2, '0');
+            document.getElementById('posBeat').textContent = String(beatInBar).padStart(2, '0');
+            document.getElementById('posTick').textContent = String(ticks).padStart(2, '0');
+        }
+
+        // Precision list table updates
+        function updateKeyframeListTable() {
+            const activeKey = paramSelector.value;
+            keyframeTableList.innerHTML = '';
+
+            if (!activeKey || !automationCurves[activeKey]) {
+                keyframeSelectedLabel.textContent = "Select Parameter";
+                keyframeTableList.innerHTML = '<div class="text-center py-6 text-[11px] text-zinc-600">No active parameter chosen.</div>';
+                return;
+            }
+
+            keyframeSelectedLabel.textContent = activeKey.toUpperCase();
+
+            const curve = automationCurves[activeKey];
+            if (curve.length === 0) {
+                keyframeTableList.innerHTML = '<div class="text-center py-6 text-[11px] text-zinc-600">No keyframes found. Click inside the visual timeline track above to set points.</div>';
+                return;
+            }
+
+            // Sort list
+            curve.sort((a, b) => a.time - b.time);
+
+            curve.forEach((pt, idx) => {
+                const item = document.createElement('div');
+                item.className = "grid grid-cols-3 gap-2 p-1.5 text-center items-center text-xs text-zinc-300 font-mono";
+
+                // Time field
+                const timeInput = document.createElement('input');
+                timeInput.type = "number";
+                timeInput.value = Math.round(pt.time * 100) / 100;
+                timeInput.step = 0.25;
+                timeInput.min = 0;
+                timeInput.max = totalBeats;
+                timeInput.className = "bg-zinc-900 text-center text-cyan-400 focus:ring-1 focus:ring-purple-500 rounded p-0.5 border border-zinc-800 focus:outline-none";
+                timeInput.onchange = (e) => {
+                    const parsedVal = Math.min(totalBeats, Math.max(0, parseFloat(e.target.value)));
+                    pt.time = parsedVal;
+                    curve.sort((a, b) => a.time - b.time);
+                    updateKeyframeListTable();
+                };
+
+                // Value field
+                const valInput = document.createElement('input');
+                valInput.type = "number";
+                valInput.value = Math.round(pt.value * 10) / 10;
+                
+                if (activeKey.includes('frequency')) {
+                    valInput.min = minFreq;
+                    valInput.max = maxFreq;
+                    valInput.step = 10;
+                } else if (activeKey.includes('gain')) {
+                    valInput.min = mindB;
+                    valInput.max = maxdB;
+                    valInput.step = 1;
+                } else {
+                    valInput.min = 0.1;
+                    valInput.max = 100;
+                    valInput.step = 0.5;
+                }
+                
+                valInput.className = "bg-zinc-900 text-center text-yellow-400 focus:ring-1 focus:ring-purple-500 rounded p-0.5 border border-zinc-800 focus:outline-none";
+                valInput.onchange = (e) => {
+                    pt.value = parseFloat(e.target.value);
+                    updateKeyframeListTable();
+                };
+
+                // Delete point button
+                const btnDel = document.createElement('button');
+                btnDel.className = "text-zinc-500 hover:text-red-400 transition-colors py-0.5";
+                btnDel.innerHTML = '<i class="fa-solid fa-trash-can text-[10px]"></i>';
+                btnDel.onclick = () => {
+                    curve.splice(idx, 1);
+                    updateKeyframeListTable();
+                };
+
+                item.appendChild(timeInput);
+                item.appendChild(valInput);
+                item.appendChild(btnDel);
+
+                keyframeTableList.appendChild(item);
+            });
+        }
+
+        // Interactivity handling algorithms for Equalizer Canvas
+        function getCarverAtMouse(mouseX, mouseY) {
+            const w = eqCanvas.width;
+            const h = eqCanvas.height;
+
+            for (let i = 0; i < carverNodes.length; i++) {
+                const node = carverNodes[i];
+                const cx = logFreqToX(node.frequency, w);
+                const cy = gainToY(node.gain, h);
+
+                const dist = Math.hypot(mouseX - cx, mouseY - cy);
+                if (dist < 18) {
+                    return node;
+                }
+            }
+            return null;
+        }
+
+        eqCanvas.addEventListener('mousedown', (e) => {
+            const rect = eqCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const carver = getCarverAtMouse(mouseX, mouseY);
+            if (carver) {
+                draggedNode = carver;
+                activeNodeId = carver.id;
+                updateParamDropdown();
+                updateSelectedInspector();
+            } else {
+                // If clicked blank space, deselect active node
+                draggedNode = null;
+            }
+        });
+
+        eqCanvas.addEventListener('mousemove', (e) => {
+            if (!draggedNode) return;
+
+            const rect = eqCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Restrict bounds
+            const boundedX = Math.min(rect.width, Math.max(0, mouseX));
+            const boundedY = Math.min(rect.height, Math.max(0, mouseY));
+
+            const logFreq = xToLogFreq(boundedX, rect.width);
+            const gain = yToGain(boundedY, rect.height);
+
+            // Set node parameters
+            draggedNode.frequency = Math.min(maxFreq, Math.max(minFreq, logFreq));
+            draggedNode.gain = Math.min(maxdB, Math.max(mindB, gain));
+
+            // Push directly to live Web Audio filter
+            const filter = filterAudioMap[draggedNode.id];
+            if (filter) {
+                filter.frequency.setValueAtTime(draggedNode.frequency, audioContext.currentTime);
+                filter.gain.setValueAtTime(draggedNode.gain, audioContext.currentTime);
+            }
+
+            // Record dynamic live keyframes if system is armed
+            if (isRecording && isPlaying) {
+                recordKeyframe(draggedNode.id, 'frequency', playheadTime, draggedNode.frequency);
+                recordKeyframe(draggedNode.id, 'gain', playheadTime, draggedNode.gain);
+            }
+
+            updateSelectedInspector();
+        });
+
+        window.addEventListener('mouseup', () => {
+            draggedNode = null;
+            isDraggingTimeline = false;
+        });
+
+        // Interactivity handling algorithms for Timeline Track Canvas
+        function getTimelineValByY(mouseY, height, activeKey) {
+            let minVal = mindB, maxVal = maxdB;
+            if (activeKey.includes('frequency')) {
+                minVal = minFreq;
+                maxVal = maxFreq;
+            } else if (activeKey.includes('Q')) {
+                minVal = 0.1;
+                maxVal = 100;
+            }
+
+            const scaleAreaH = height - 45;
+            const normY = (height - 25 - mouseY) / scaleAreaH;
+            const clampedNorm = Math.min(1.0, Math.max(0.0, normY));
+
+            if (activeKey.includes('frequency')) {
+                const minL = Math.log(minFreq);
+                const maxL = Math.log(maxFreq);
+                return Math.exp(minL + clampedNorm * (maxL - minL));
+            } else {
+                return minVal + clampedNorm * (maxVal - minVal);
+            }
+        }
+
+        function getTimelineKeyframeAtMouse(mouseX, mouseY, w, h, curve, activeKey) {
+            if (!curve) return -1;
+            
+            let minVal = mindB, maxVal = maxdB;
+            if (activeKey.includes('frequency')) {
+                minVal = minFreq;
+                maxVal = maxFreq;
+            } else if (activeKey.includes('Q')) {
+                minVal = 0.1;
+                maxVal = 100;
+            }
+
+            const scaleAreaH = h - 45;
+
+            for (let i = 0; i < curve.length; i++) {
+                const pt = curve[i];
+                const ptX = (pt.time / totalBeats) * w;
+                
+                let norm = 0;
+                if (activeKey.includes('frequency')) {
+                    const minL = Math.log(minFreq);
+                    const maxL = Math.log(maxFreq);
+                    norm = (Math.log(pt.value) - minL) / (maxL - minL);
+                } else {
+                    norm = (pt.value - minVal) / (maxVal - minVal);
+                }
+                const ptY = h - 25 - (norm * scaleAreaH);
+
+                if (Math.hypot(mouseX - ptX, mouseY - ptY) < 10) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        timelineCanvas.addEventListener('mousedown', (e) => {
+            const rect = timelineCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const activeKey = paramSelector.value;
+            if (!activeKey || !automationCurves[activeKey]) return;
+
+            const curve = automationCurves[activeKey];
+            const kfIdx = getTimelineKeyframeAtMouse(mouseX, mouseY, rect.width, rect.height, curve, activeKey);
+
+            if (kfIdx !== -1) {
+                activeKeyframeIndex = kfIdx;
+                isDraggingTimeline = true;
+            } else {
+                // Check if user clicked the playback header strip area to seek playhead position
+                if (mouseY < 25) {
+                    playheadTime = (mouseX / rect.width) * totalBeats;
+                    updateClockUI();
+                } else {
+                    activeKeyframeIndex = null;
+                }
+            }
+        });
+
+        timelineCanvas.addEventListener('mousemove', (e) => {
+            const rect = timelineCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const activeKey = paramSelector.value;
+            if (!activeKey || !automationCurves[activeKey]) return;
+
+            const curve = automationCurves[activeKey];
+
+            if (isDraggingTimeline && activeKeyframeIndex !== null && curve[activeKeyframeIndex]) {
+                const pt = curve[activeKeyframeIndex];
+
+                // Map mouse positions
+                const computedTime = (mouseX / rect.width) * totalBeats;
+                const roundedTime = Math.min(totalBeats, Math.max(0, Math.round(computedTime * 100) / 100));
+                
+                const computedValue = getTimelineValByY(mouseY, rect.height, activeKey);
+                
+                pt.time = roundedTime;
+                pt.value = computedValue;
+
+                // Keep points array sorted chronologically
+                curve.sort((a, b) => a.time - b.time);
+                activeKeyframeIndex = curve.findIndex(p => p.time === roundedTime); // update tracked selection index
+
+                updateKeyframeListTable();
+            } else if (e.buttons === 1 && mouseY < 25) {
+                // Tracking playhead scrubbing
+                playheadTime = Math.min(totalBeats, Math.max(0, (mouseX / rect.width) * totalBeats));
+                updateClockUI();
+            }
+        });
+
+        // Double-click timeline workspace canvas to instantiate manual keyframe points
+        timelineCanvas.addEventListener('dblclick', (e) => {
+            const rect = timelineCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const activeKey = paramSelector.value;
+            if (!activeKey || !automationCurves[activeKey]) return;
+
+            const curve = automationCurves[activeKey];
+            
+            // Map timeline parameters
+            const timeVal = Math.min(totalBeats, Math.max(0, (mouseX / rect.width) * totalBeats));
+            const roundedTime = Math.round(timeVal * 100) / 100;
+            const targetVal = getTimelineValByY(mouseY, rect.height, activeKey);
+
+            // Add point
+            curve.push({ time: roundedTime, value: targetVal });
+            curve.sort((a, b) => a.time - b.time);
+
+            updateKeyframeListTable();
+            showNotification("Keyframe Created", `Set point atbeat ${roundedTime}.`, "success");
+        });
+
+        // Trigger loading demo track composition presets
+        presetSelect.onchange = (e) => {
+            const choice = e.target.value;
+            if (choice === 'none') return;
+
+            const preset = presetData[choice];
+            if (!preset) return;
+
+            // Wipe nodes
+            carverNodes = [];
+            automationCurves = {};
+
+            // Instantiate copies
+            preset.nodes.forEach(n => {
+                carverNodes.push({
+                    id: n.id,
+                    label: n.label,
+                    type: n.type,
+                    frequency: n.frequency,
+                    gain: n.gain,
+                    Q: n.Q,
+                    bypassed: n.bypassed
+                });
+            });
+
+            // Map corresponding automated lines curves
+            for (let curveKey in preset.curves) {
+                automationCurves[curveKey] = JSON.parse(JSON.stringify(preset.curves[curveKey]));
+            }
+
+            // Fill missing parameters curves with defaults to avoid null checks
+            carverNodes.forEach(node => {
+                ['frequency', 'gain', 'Q'].forEach(param => {
+                    const key = `${node.id}_${param}`;
+                    if (!automationCurves[key]) {
+                        automationCurves[key] = [{ time: 0, value: node[param] }, { time: 16, value: node[param] }];
+                    }
+                });
+            });
+
+            activeNodeId = carverNodes.length > 0 ? carverNodes[0].id : null;
+            rebuildFilterAudioRoute();
+            updateParamDropdown();
+            updateSelectedInspector();
+
+            showNotification("Preset Track Loaded", `Sculpted preset "${choice.toUpperCase()}" initialized.`, "success");
+        };
+
+        // UI Header controls listeners
+        startEngineBtn.onclick = () => {
+            // Unlocks modern audio engines
+            initAudioEngine();
+            splashScreen.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => splashScreen.remove(), 500);
+
+            // Start rendering visual updates loop
+            drawEQCanvas();
+            drawTimelineCanvas();
+        };
+
+        btnPlay.onclick = () => {
+            if (!audioContext) return;
+            if (isPlaying) return;
+
+            // Resume audio system
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            isPlaying = true;
+            lastTimeUpdated = performance.now();
+            btnPlay.classList.add('bg-purple-600/30', 'text-purple-400', 'border-purple-500/20');
+            btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+            // Establish tick loop
+            sequencerTimer = setInterval(stepSequencer, 15);
+            showNotification("Synth Sequencer Active", "Carving dynamic EQ sweeps over timeline.", "success");
+        };
+
+        // Map Play button toggle as a Pause functionality
+        const originalPlayClick = btnPlay.onclick;
+        btnPlay.onclick = () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearInterval(sequencerTimer);
+                btnPlay.classList.remove('bg-purple-600/30', 'text-purple-400');
+                btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
+                showNotification("Sequencer Paused", "Motion playback halted.", "alert");
+            } else {
+                originalPlayClick();
+            }
+        };
+
+        btnStop.onclick = () => {
+            isPlaying = false;
+            clearInterval(sequencerTimer);
+            playheadTime = 0.0;
+            updateClockUI();
+
+            btnPlay.classList.remove('bg-purple-600/30', 'text-purple-400');
+            btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
+            showNotification("Sequencer Stopped", "Playhead reset to beat zero.", "alert");
+        };
+
+        btnRecord.onclick = () => {
+            isRecording = !isRecording;
+            if (isRecording) {
+                btnRecord.classList.add('text-red-500', 'bg-red-500/10');
+                recordingIndicator.classList.remove('hidden');
+                showNotification("Record Armed", "Record automation sweeps live while playhead is running.", "alert");
+            } else {
+                btnRecord.classList.remove('text-red-500', 'bg-red-500/10');
+                recordingIndicator.classList.add('hidden');
+                showNotification("Recording Finished", "Live automation keyframes recorded successfully.", "success");
+            }
+        };
+
+        bpmInput.onchange = (e) => {
+            const parsed = Math.min(200, Math.max(60, parseInt(e.target.value)));
+            bpm = parsed;
+            bpmInput.value = parsed;
+        };
+
+        togglePhase.onchange = (e) => {
+            if (!audioContext) return;
+            const checked = e.target.checked;
+            
+            // Positive 0.5 vs Phase inverted -0.5 is what drives cancellation silence
+            const wetGainVal = checked ? -0.5 : 0.5;
+            wetGainNode.gain.setValueAtTime(wetGainVal, audioContext.currentTime);
+
+            if (checked) {
+                showNotification("Phase Cancellation Set", "Vessels cancellation active. Noise drops to silence.", "success");
+            } else {
+                showNotification("Inversion Bypassed", "Both channels are fully in-phase. No cancellation.", "alert");
+            }
+        };
+
+        masterVolume.oninput = (e) => {
+            if (masterGainNode) {
+                masterGainNode.gain.setValueAtTime(parseFloat(e.target.value), audioContext.currentTime);
+            }
+        };
+
+        // Quick inspector edit fields listeners
+        nodeLabel.oninput = (e) => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                active.label = e.target.value;
+                updateParamDropdown();
+            }
+        };
+
+        nodeType.onchange = (e) => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                active.type = e.target.value;
+                rebuildFilterAudioRoute();
+            }
+        };
+
+        nodeBypass.onclick = () => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                active.bypassed = !active.bypassed;
+                rebuildFilterAudioRoute();
+                updateSelectedInspector();
+            }
+        };
+
+        freqInput.onchange = (e) => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                const parsed = Math.min(maxFreq, Math.max(minFreq, parseFloat(e.target.value)));
+                active.frequency = parsed;
+                rebuildFilterAudioRoute();
+            }
+        };
+
+        gainInput.onchange = (e) => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                const parsed = Math.min(maxdB, Math.max(mindB, parseFloat(e.target.value)));
+                active.gain = parsed;
+                rebuildFilterAudioRoute();
+            }
+        };
+
+        qInput.onchange = (e) => {
+            const active = carverNodes.find(n => n.id === activeNodeId);
+            if (active) {
+                const parsed = Math.min(100, Math.max(0.1, parseFloat(e.target.value)));
+                active.Q = parsed;
+                rebuildFilterAudioRoute();
+            }
+        };
+
+        // Table inspector settings updates
+        paramSelector.onchange = (e) => {
+            const [nodeId, paramName] = e.target.value.split('_');
+            activeNodeId = nodeId;
+            activeParam = paramName;
+            
+            const sel = carverNodes.find(n => n.id === nodeId);
+            automatingTextLabel.textContent = sel ? `${sel.label} - ${paramName.toUpperCase()}` : "No active curve";
+            
+            updateSelectedInspector();
+            updateKeyframeListTable();
+        };
+
+        addManualKeyframeBtn.onclick = () => {
+            const activeKey = paramSelector.value;
+            if (!activeKey || !automationCurves[activeKey]) return;
+
+            const curve = automationCurves[activeKey];
+            
+            // Add point at current beat head
+            const valAtHead = getAutomatedValue(activeNodeId, activeParam, playheadTime) || 1000;
+            
+            curve.push({ time: playheadTime, value: valAtHead });
+            curve.sort((a, b) => a.time - b.time);
+            
+            updateKeyframeListTable();
+            showNotification("Keyframe Formed", `Precision keyframe set at Beat ${playheadTime}.`, "success");
+        };
+
+        addNodeBtn.onclick = () => {
+            // Create a randomized frequency carver node bell curve
+            const randomFreq = Math.floor(Math.exp(Math.log(minFreq) + Math.random() * (Math.log(maxFreq) - Math.log(minFreq))));
+            createCarverNode("Carver Band", "peaking", randomFreq, 14, 40);
+        };
+
+        deleteNodeBtn.onclick = () => {
+            deleteActiveNode();
+        };
+
+        simplifyCurveBtn.onclick = () => {
+            simplifyCurveBtnHandler();
+        };
+
+        // Window resize events adjustments
+        window.addEventListener('resize', () => {
+            // Adaptive redraw cycle catches sizes
+            drawEQCanvas();
+            drawTimelineCanvas();
+        });
+
+        // Initialize empty baseline startup node carver
+        // This sets a clean slate so the user is ready to begin carving immediately on launch
+        createCarverNode("Sub Resonance", "peaking", 100, 16, 45);
+    </script>
+</body>
+</html>
