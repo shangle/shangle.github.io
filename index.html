@@ -3,187 +3,800 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimistic Innovation | Honest Code</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Tim Shangle | Banker, Theologian, Builder</title>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Lora (Editorial Serif) & Outfit (Modern Sans) -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        serif: ['Merriweather', 'serif'],
-                        sans: ['Public Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        paper: '#f8f5f2',
-                        ink: '#2b2a29',
-                        highlight: '#ffde59',
-                        accent: '#3b82f6',
-                        success: '#22c55e',
-                    },
-                    boxShadow: {
-                        'retro': '5px 5px 0px 0px rgba(0,0,0,1)',
-                        'retro-sm': '3px 3px 0px 0px rgba(0,0,0,1)',
-                        'retro-hover': '2px 2px 0px 0px rgba(0,0,0,1)',
-                    }
-                }
+    <style>
+        /* Custom Modern CSS Design System */
+        :root {
+            --bg-color: #fbfaf7;       /* Warm Alabaster/Parchment */
+            --card-bg: #ffffff;        /* Crisp White for containers */
+            --text-color: #1a1917;     /* Deep charcoal ink */
+            --text-muted: #5c5954;     /* Warm grey-brown ink */
+            --border-color: #e6e1d8;   /* Muted sand border */
+            --accent-color: #556b2f;   /* Sage Green accent */
+            --accent-light: #f1ede4;   /* Soft cream/sand */
+            --accent-dark: #3a4b20;    /* Dark sage */
+            --highlight: #f5dfbe;      /* Warm beige highlight */
+            --success-color: #4a7c59;  /* Muted green for progress */
+            --font-serif: 'Lora', Georgia, serif;
+            --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Reset & Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(var(--border-color) 0.8px, transparent 0.8px);
+            background-size: 32px 32px;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Section Separator */
+        .section-separator {
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            margin: 0;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(251, 250, 247, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--text-color);
+            color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            border-radius: 4px;
+        }
+        .brand-text {
+            font-family: var(--font-serif);
+            font-size: 1.15rem;
+            letter-spacing: -0.01em;
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+            padding: 4px 0;
+            transition: var(--transition-smooth);
+        }
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: var(--transition-smooth);
+        }
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 180px 0 100px 0;
+            text-align: center;
+        }
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-dark);
+            background: var(--accent-light);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: 3.75rem;
+            line-height: 1.15;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2.75rem;
             }
         }
-    </script>
-    <style>
-        body {
-            background-color: #f8f5f2;
-            color: #2b2a29;
-            background-image: radial-gradient(#2b2a29 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
+        .hero-title span {
+            background-image: linear-gradient(120deg, var(--highlight) 0%, var(--highlight) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 80%;
         }
-        .retro-card {
-            background: white;
-            border: 2px solid black;
-            box-shadow: 5px 5px 0px 0px rgba(0,0,0,1);
-            transition: all 0.2s ease;
+        .hero-subtitle {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+            max-width: 620px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
-        .retro-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 7px 7px 0px 0px rgba(0,0,0,1);
+
+        /* Student Loanware Model Widget */
+        .loan-widget {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+            text-align: left;
+            margin-top: 40px;
         }
-        .retro-btn {
-            border: 2px solid black;
-            box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
-            transition: all 0.1s ease;
+        .loan-widget h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
         }
-        .retro-btn:active {
-            transform: translate(3px, 3px);
-            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1);
+        .loan-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 32px;
+            align-items: center;
         }
-        .badge {
+        @media (max-width: 768px) {
+            .loan-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        .loan-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .loan-text p {
+            margin-bottom: 12px;
+        }
+        .loan-progress-container {
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
             font-size: 0.75rem;
             font-weight: 700;
-            padding: 0.25rem 0.5rem;
-            border: 2px solid black;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e6e0d4;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--success-color);
+            width: 12%; /* Set current progress percentage */
+            border-radius: 4px;
+        }
+        .loan-btn {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--text-color);
+        }
+        .loan-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Sections General */
+        .section-padding {
+            padding: 100px 0;
+        }
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* About Section */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 64px;
+            align-items: flex-start;
+        }
+        @media (max-width: 768px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+        .about-bio {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.75;
+        }
+        .about-bio p {
+            margin-bottom: 24px;
+        }
+        .about-bio strong {
+            color: var(--text-color);
+        }
+        .academic-badge {
+            display: inline-block;
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+        .academic-badge:hover {
+            background: var(--highlight);
+        }
+        .editorial-link {
+            color: var(--text-color);
+            text-decoration: underline;
+            text-decoration-color: var(--border-color);
+            text-underline-offset: 4px;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+        .editorial-link:hover {
+            color: var(--accent-color);
+            text-decoration-color: var(--accent-color);
+        }
+        .values-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+        }
+        .values-card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        .value-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .value-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .value-icon {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-top: 2px;
+        }
+        .value-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+        .value-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Apps Grid */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+        @media (max-width: 768px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+            transition: var(--transition-smooth);
+        }
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(28,26,23,0.06);
+            border-color: #d1c9bd;
+        }
+        .app-banner {
+            height: 140px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            transition: var(--transition-smooth);
+        }
+        .app-card:hover .app-banner {
+            background: #eae3d7;
+            color: var(--accent-dark);
+        }
+        .app-info {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .app-title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .app-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .app-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .app-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+        .app-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+        .btn-primary {
+            flex-grow: 1;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--text-color);
+            transition: var(--transition-smooth);
+        }
+        .btn-primary:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .btn-icon {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            background: white;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            background: transparent;
+        }
+        .btn-icon:hover {
+            background: var(--accent-light);
+            border-color: var(--text-muted);
+        }
+
+        /* Games Section */
+        .games-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .game-strip {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+            transition: var(--transition-smooth);
+        }
+        .game-strip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(28,26,23,0.04);
+            border-color: #d1c9bd;
+        }
+        .game-preview {
+            width: 300px;
+            height: 170px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .game-strip {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .game-preview {
+                width: 100%;
+                aspect-ratio: 16/9;
+                height: auto;
+            }
+        }
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.85;
+            transition: var(--transition-smooth);
+        }
+        .game-strip:hover .game-overlay {
+            opacity: 0.95;
+            transform: scale(1.05);
+        }
+        .game-icon-z {
+            position: relative;
+            z-index: 10;
+            transition: var(--transition-smooth);
+        }
+        .game-strip:hover .game-icon-z {
+            transform: scale(1.1);
+        }
+        .game-details {
+            flex-grow: 1;
+        }
+        .game-genre {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-dark);
+            margin-bottom: 8px;
+        }
+        .game-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .game-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+        .game-checklists {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .checklist-item i {
+            color: var(--success-color);
+        }
+
+        /* Labs Callout Card */
+        .labs-callout-card {
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 60px;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+            transition: var(--transition-smooth);
+        }
+        .labs-callout-card:hover {
+            border-color: #d1c9bd;
+            box-shadow: 0 12px 30px rgba(28,26,23,0.04);
+        }
+        .labs-callout-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .labs-callout-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .btn-secondary {
+            display: inline-block;
+            text-decoration: none;
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--text-color);
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: var(--transition-smooth);
+        }
+        .btn-secondary:hover {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        /* Footer & Contact */
+        footer {
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 100px 0 40px 0;
+            text-align: center;
+        }
+        .footer-title {
+            font-family: var(--font-serif);
+            font-size: 2.25rem;
+            margin-bottom: 16px;
+        }
+        .footer-desc {
+            color: #c9c5bd;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .footer-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px 36px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 4px;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .footer-btn:hover {
+            background: var(--highlight);
+            transform: translateY(-2px);
+        }
+        .footer-copyright {
+            margin-top: 80px;
+            font-size: 0.85rem;
+            color: #7a766f;
+            border-top: 1px solid #32302c;
+            padding-top: 24px;
         }
     </style>
 </head>
-<body class="font-sans antialiased selection:bg-highlight">
+<body>
 
-    <!-- Navbar -->
-    <nav class="fixed w-full z-50 top-0 border-b-2 border-black bg-paper">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex-shrink-0 flex items-center gap-2">
-                    <div class="w-8 h-8 bg-black text-white flex items-center justify-center font-serif font-bold text-xl rounded-sm">S</div>
-                    <span class="font-serif font-bold text-lg">Shangle.me</span>
-                </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-8">
-                        <a href="#about" class="hover:underline decoration-2 underline-offset-4 font-medium">About</a>
-                        <a href="#apps" class="hover:underline decoration-2 underline-offset-4 font-medium">Apps</a>
-                        <a href="#games" class="hover:underline decoration-2 underline-offset-4 font-medium">Games</a>
-                        <a href="#contact" class="hover:underline decoration-2 underline-offset-4 font-medium">Contact</a>
-                    </div>
-                </div>
-            </div>
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="brand">
+                <div class="brand-logo">S</div>
+                <span class="brand-text">shangle.me</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#apps">Apps</a></li>
+                    <li><a href="#games">Games</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-    </nav>
+    </header>
 
     <!-- Hero Section -->
-    <section class="pt-32 pb-20 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-block px-3 py-1 mb-4 border-2 border-black bg-white font-bold text-sm uppercase tracking-wider shadow-retro-sm">
-                Optimistic Innovation
-            </span>
-            <h1 class="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight text-ink">
-                I share the <span class="bg-highlight px-2 italic">awesome things</span> I build.
+    <section class="hero">
+        <div class="container hero-content">
+            <span class="hero-tag">Optimistic Innovation</span>
+            <h1 class="hero-title">
+                I share the <span>awesome things</span> I build.
             </h1>
-            <p class="text-xl text-gray-700 mb-10 font-serif leading-relaxed max-w-2xl mx-auto">
-                No ads. No tracking. Just honest software built by a human to solve real problems.
+            <p class="hero-subtitle">
+                No ads. No tracking. Just honest software built by a human to solve real-world problems.
             </p>
             
-            <!-- The Deal Box -->
-            <div class="retro-card p-6 md:p-8 text-left max-w-2xl mx-auto transform -rotate-1 bg-white">
-                <h3 class="font-bold text-xl mb-3 flex items-center gap-2 border-b-2 border-gray-100 pb-2">
+            <!-- Student Loanware Widget -->
+            <div class="loan-widget">
+                <h3>
                     <i class="ph-fill ph-handshake text-2xl"></i> The "Student Loanware" Model
                 </h3>
-                <div class="flex flex-col md:flex-row gap-6 items-center">
-                    <div class="flex-1">
-                        <p class="mb-4 text-sm md:text-base">
+                <div class="loan-grid">
+                    <div class="loan-text">
+                        <p>
                             I build high-quality, privacy-focused apps for free. If they help you, you can chip in. 
-                            <strong>100% of donations go to paying off my student loans.</strong>
                         </p>
-                        <p class="text-sm font-bold">
-                            Once the debt hits $0, the donate button disappears forever.
+                        <p>
+                            <strong>100% of donations go to paying off my student loans.</strong> Once the debt hits $0, the donate button disappears forever.
                         </p>
                     </div>
-                    <!-- Progress Bar -->
-                    <div class="w-full md:w-1/3 bg-gray-50 p-4 border-2 border-black rounded-sm">
-                        <div class="flex justify-between text-xs font-bold mb-1">
+                    <div class="loan-progress-container">
+                        <div class="progress-header">
                             <span>Debt</span>
                             <span>Freedom</span>
                         </div>
-                        <div class="w-full h-4 border-2 border-black bg-gray-200 rounded-full overflow-hidden relative mb-2">
-                            <div class="absolute top-0 left-0 h-full bg-green-500 w-[12%] border-r-2 border-black"></div>
-                            <div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(45deg, #000 25%, transparent 25%, transparent 50%, #000 50%, #000 75%, transparent 75%, transparent); background-size: 8px 8px;"></div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill"></div>
                         </div>
-                        <div class="text-center">
-                            <a href="#" class="retro-btn bg-green-400 hover:bg-green-500 px-4 py-1 text-xs font-bold w-full block text-center">Donate a Coffee</a>
-                        </div>
+                        <a href="#" class="loan-btn">Donate a Coffee</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <hr class="section-separator">
+
     <!-- About Section -->
-    <section id="about" class="py-20 border-t-2 border-black bg-white">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-4xl font-serif font-bold mb-12 flex items-center gap-3">
-                <i class="ph ph-identification-card"></i> Who Am I?
-            </h2>
-            
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6 text-lg text-gray-800 leading-relaxed font-serif">
+    <section id="about" class="section-padding">
+        <div class="container">
+            <h2 class="section-title"><i class="ph ph-identification-card"></i> Who Am I?</h2>
+            <div class="about-grid">
+                <div class="about-bio">
                     <p>
-                        I wear a few different hats. By trade, I am a <strong>Banker</strong>, speaking across the country about innovation in community banking. By education, I am a <strong>Theologian</strong>. By duty, I am a <strong>Father and Husband</strong>.
+                        I wear a few different hats. By trade, I am a <strong>Banker</strong>, driving innovation and digital strategy in community banking through ventures like <a href="https://bigbeaverbank.com" target="_blank" class="editorial-link">Big Beaver Bank</a>. By education, I am a <strong>Theologian</strong>. By duty, I am a <strong>Father and Husband</strong>.
                     </p>
                     <p>
-                        I hold a B.S. in Computer Information Systems from <span class="bg-red-100 px-1 border border-black rounded-sm">Aquinas College</span> and an M.A. in Theological Studies from <span class="bg-blue-100 px-1 border border-black rounded-sm">Asbury Theological Seminary</span>.
+                        I hold a B.S. in Computer Information Systems from <a href="https://www.aquinas.edu" target="_blank" class="academic-badge">Aquinas College</a> and an M.A. in Theological Studies from <a href="https://asburyseminary.edu" target="_blank" class="academic-badge">Asbury Theological Seminary</a>.
                     </p>
                     <p>
                         This website is my digital playground—a place where my love for technology meets my desire to build helpful, ethical tools for the community.
                     </p>
                 </div>
-                
-                <div class="retro-card p-6 bg-paper rotate-2">
-                    <h3 class="font-bold border-b-2 border-black pb-2 mb-4">Core Values</h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <i class="ph-fill ph-lock-key text-xl text-blue-600 mt-1"></i>
+                <div class="values-card">
+                    <h3>Core Values</h3>
+                    <ul class="value-list">
+                        <li class="value-item">
+                            <i class="ph-fill ph-lock-key value-icon"></i>
                             <div>
-                                <span class="font-bold block">Privacy is a Right</span>
-                                <span class="text-sm text-gray-600">My apps don't track you. Period.</span>
+                                <h4 class="value-title">Privacy is a Right</h4>
+                                <p class="value-desc">My apps do not track you. Period.</p>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <i class="ph-fill ph-wallet text-xl text-green-600 mt-1"></i>
+                        <li class="value-item">
+                            <i class="ph-fill ph-wallet value-icon"></i>
                             <div>
-                                <span class="font-bold block">Accessible to All</span>
-                                <span class="text-sm text-gray-600">Cost shouldn't be a barrier to useful tools.</span>
+                                <h4 class="value-title">Accessible to All</h4>
+                                <p class="value-desc">Cost should never be a barrier to useful tools.</p>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <i class="ph-fill ph-smiley text-xl text-highlight mt-1 text-yellow-600"></i>
+                        <li class="value-item">
+                            <i class="ph-fill ph-smiley value-icon"></i>
                             <div>
-                                <span class="font-bold block">Optimism</span>
-                                <span class="text-sm text-gray-600">Technology should make life better, not more stressful.</span>
+                                <h4 class="value-title">Optimism</h4>
+                                <p class="value-desc">Technology should make life better, not more stressful.</p>
                             </div>
                         </li>
                     </ul>
@@ -192,305 +805,233 @@
         </div>
     </section>
 
-    <!-- Apps Section (Dynamic) -->
-    <section id="apps" class="py-20 border-t-2 border-black bg-paper">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="flex items-center justify-between mb-12">
-                <h2 class="text-4xl font-serif font-bold">The Apps</h2>
-                <div class="hidden md:flex gap-2">
-                    <span class="badge bg-green-100">Free</span>
-                    <span class="badge bg-blue-100">Private</span>
-                </div>
-            </div>
-            <!-- Apps Container - JS will inject content here -->
-            <div id="apps-container" class="grid md:grid-cols-2 gap-8"></div>
-        </div>
-    </section>
+    <hr class="section-separator">
 
-    <!-- Games Section (Dynamic) -->
-    <section id="games" class="py-20 border-t-2 border-black bg-white">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-4xl font-serif font-bold mb-12">The Games <span class="text-lg font-sans font-normal ml-2 bg-paper border-2 border-black px-2 py-1 shadow-retro-sm">For Fun</span></h2>
-            <!-- Games Container - JS will inject content here -->
-            <div id="games-container" class="grid gap-8"></div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 border-t-2 border-black bg-ink text-white">
-        <div class="max-w-3xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-serif font-bold mb-6">Let's Connect</h2>
-            <p class="text-gray-300 mb-8 text-lg">
-                Have an idea for an app? Found a bug? Just want to say hello?
-            </p>
-            <a href="mailto:hello@shangle.me" class="inline-flex items-center gap-3 bg-white text-black px-8 py-4 font-bold text-xl border-2 border-white hover:bg-highlight hover:border-highlight hover:text-black transition-colors shadow-retro-sm">
-                <i class="ph-fill ph-envelope-simple"></i> hello@shangle.me
-            </a>
-            <p class="text-sm text-gray-500 mt-12">
-                &copy; 2025 Shangle.me. Built with ♥️ and Optimism.
-            </p>
-        </div>
-    </section>
-
-    <!-- 
-      =======================================================================
-      EASY UPDATE SECTION
-      Edit the 'siteConfig' object below to add apps and games.
-      =======================================================================
-    -->
-    <script>
-        const siteConfig = {
-            // Edit your Apps here
-            apps: [
-                {
-                    title: "EQ Sound Carver",
-                    description: "An interactive phase-cancellation synthesizer inspired by Andy Brewer's YouTube masterpiece. Sculpt synthesizers, drum hits, and rhythmic patterns out of pure silence using phase-inverted pink noise and surgical equalizers.",
-                    icon: "ph-waveform",
-                    iconColor: "text-purple-600",
-                    bgColor: "bg-purple-50",
-                    badges: ["Web Audio API", "Phase Cancellation", "Surgical EQ", "Live Automation"],
-                    link: "/eq-sound-carver/",
-                    repo: "https://github.com/shangle/eq-sound-carver",
-                    status: "Live"
-                },
-                {
-                    title: "Executive Assistant",
-                    description: "Your local-first personal operating system for financial life data. Ingests messy transaction alerts, receipts, statements, and CSV exports, structures them using open schemas, and reconciles matches securely on your own computer.",
-                    icon: "ph-safe",
-                    iconColor: "text-amber-600",
-                    bgColor: "bg-amber-50",
-                    badges: ["Local SQLite", "Reconciliation Engine", "Open Standards", "Privacy First"],
-                    link: "/executive-assistant/",
-                    repo: "https://github.com/shangle/Executive-Assistant",
-                    status: "Live"
-                },
-                {
-                    title: "Speak2Compose",
-                    description: "A Windows 98 SE themed voice-to-music live coder that generates valid Strudel syntax using Web Speech, Web Audio, and Webamp. Conduct music live simply by speaking!",
-                    icon: "ph-music-notes-plus",
-                    iconColor: "text-blue-500",
-                    bgColor: "bg-blue-50",
-                    badges: ["Web Speech API", "Webamp", "AudioContext", "Creative Tool"],
-                    link: "/Speak2Compose/",
-                    repo: "https://github.com/shangle/Speak2Compose",
-                    status: "Live"
-                },
-                {
-                    title: "AutoCut",
-                    description: "The Hank Green Pipeline. A fully automated, AI-driven video editing tool that converts raw footage into tight, fast-paced educational content using Whisper and Gemini.",
-                    icon: "ph-video-camera",
-                    iconColor: "text-purple-600",
-                    bgColor: "bg-purple-50",
-                    badges: ["AI / ML", "FFmpeg", "Python"],
-                    link: "https://github.com/shangle/autocut",
-                    repo: "https://github.com/shangle/autocut",
-                    status: "Development"
-                },
-                {
-                    title: "PixUrl",
-                    description: "Bring data URLs to the Age of AI. A versatile utility for previewing images, generating data URLs, and quick 64x64 pixel editing with retro filters.",
-                    icon: "ph-image",
-                    iconColor: "text-rose-500",
-                    bgColor: "bg-rose-50",
-                    badges: ["Web Components", "Data URLs", "Retro Filters"],
-                    link: "/pixurl/",
-                    repo: "https://github.com/shangle/pixurl",
-                    status: "Live"
-                },
-                {
-                    title: "Pixel Animator",
-                    description: "Create and share 16x16 pixel animations. Uses URL compression so you can share your creations with a single link. No accounts, no database, just pixels.",
-                    icon: "ph-palette",
-                    iconColor: "text-orange-500",
-                    bgColor: "bg-orange-50",
-                    badges: ["React", "URL Sharing", "No Database"],
-                    link: "pixel.html",
-                    status: "Live"
-                },
-                {
-                    title: "The Historical Feed",
-                    description: "Experience history through a modern lens. Archival newspaper scans are deconstructed into a chronological social media feed using AI spatial analysis.",
-                    icon: "ph-newspaper",
-                    iconColor: "text-amber-600",
-                    bgColor: "bg-amber-50",
-                    badges: ["AI / Vision", "React", "Digital Archiving"],
-                    link: "/oldnews/",
-                    repo: "https://github.com/shangle/oldnews",
-                    status: "Live"
-                },
-                {
-                    title: "Starrypad",
-                    description: "A MIDI-powered track builder. Connect your MIDI device and start building layers with the 'Magic Multiplier' for instant composition.",
-                    icon: "ph-music-notes",
-                    iconColor: "text-teal-500",
-                    bgColor: "bg-teal-50",
-                    badges: ["Web MIDI API", "AudioContext", "Creative Tool"],
-                    link: "starrypad.html",
-                    status: "Live"
-                },
-                {
-                    title: "Simple Expense Tracker",
-                    description: "Split expenses, not friendships. The easiest way to track travel costs. No accounts to create, no servers to hack, and completely free. Just share a link.",
-                    icon: "ph-receipt", // Phosphor Icon name
-                    iconColor: "text-blue-600",
-                    bgColor: "bg-blue-50",
-                    badges: ["Local Storage", "No Account", "No Ads"],
-                    link: "/TripSplitter/", // Link to your GitHub Pages app
-                    repo: "https://github.com/shangle/TripSplitter/", // Link to source code
-                    status: "Live"
-                },
-                {
-                    title: "Nagware Creator",
-                    description: "The ethical way to monetize free software. Generates a polite, self-destructing popup asking for support. No accounts, no tracking, just human connection.",
-                    icon: "ph-hand-heart", 
-                    iconColor: "text-indigo-600",
-                    bgColor: "bg-indigo-50",
-                    badges: ["Generator", "No Database", "Nagware"],
-                    link: "/NagwareCreator/",
-                    repo: "https://github.com/shangle/NagwareCreator/",
-                    status: "Live"
-                },
-                {
-                    title: "Walkthrough Creator",
-                    description: "Train users, don't bore them. Turn static screenshots into gamified, clickable lessons. Exports a standalone HTML file you can share anywhere. No data collection, no monthly fees, just teaching.",
-                    icon: "ph-cursor-click", // Matches the interaction/hotspot mechanic
-                    iconColor: "text-indigo-600",
-                    bgColor: "bg-indigo-50",
-                    badges: ["Single File Export", "No Database", "Gamified"],
-                    link: "/Walkthrough-Creator/",
-                    repo: "https://github.com/shangle/Walkthrough-Creator/",
-                    status: "Live"
-                },
-                {
-                    title: "NeonSpiro",
-                    description: "Rediscover the joy of mathematical art. A hypnotic, animated drawing tool that lives entirely in your browser. Create complex patterns, add neon effects, and export your masterpieces without signing up for anything.",
-                    icon: "ph-aperture", 
-                    iconColor: "text-sky-500",
-                    bgColor: "bg-slate-900", // Using a dark theme bg for this one
-                    badges: ["Canvas API", "No Database", "Creative Tool"],
-                    link: "/NeonSpiro/",
-                    repo: "https://github.com/shangle/NeonSpiro/",
-                    status: "Live"
-                }
-            ],
-            
-            // Edit your Games here
-            games: [
-                {
-                    title: "Retro Engine Studio",
-                    description: "A modular, web-based 3D retro game engine and visual level editor. Built with Three.js to bring old-school aesthetics to the modern web.",
-                    genre: "3D Engine / Level Editor",
-                    image: "bg-gradient-to-br from-green-600 to-blue-500", 
-                    link: "/game-poc/",
-                    repo: "https://github.com/shangle/game-poc"
-                },
-                {
-                    title: "Retro Runner",
-                    description: "Sometimes you just need to jump over pixelated obstacles. A vibe-coded game built in a single afternoon.",
-                    genre: "Arcade",
-                    image: "bg-gradient-to-br from-purple-600 to-blue-600", // Or use url('image.jpg')
-                    link: "https://codepen.io/shangle/full/LENOKbe"
-                },
-                {
-                    title: "Wacky Tube Battle",
-                    description: "A chaotic physics fighter built from scratch using Verlet integration. Control an inflatable tube man and slap your way to victory in this zero-dependency browser game.",
-                    genre: "Physics / Fighting",
-                    image: "bg-gradient-to-br from-blue-600 to-red-500", 
-                    link: "/Wacky-Tube-Battle" // Assumes app.html is in the same directory
-                },
-                {
-                    title: "Hexa Stack Sort",
-                    description: "Stack. Merge. Chill. Escape into a colorful world of hexagonal sorting. No ads. No timers. Just pure, satisfying gameplay designed to relax your mind.",
-                    genre: "Puzzle / Color-Matching",
-                    image: "bg-gradient-to-br from-blue-300 to-purple-500", 
-                    link: "/HexaSort" // Assumes app.html is in the same directory
-                }
-
-            ]
-        };
-
-        // =======================================================================
-        // RENDERING LOGIC (You don't need to touch this unless you want to change layout)
-        // =======================================================================
-        
-        function renderApps() {
-            const container = document.getElementById('apps-container');
-            
-            siteConfig.apps.forEach(app => {
-                const isLive = app.link !== null;
+    <!-- Apps Section -->
+    <section id="apps" class="section-padding" style="background: rgba(230, 225, 216, 0.2);">
+        <div class="container">
+            <h2 class="section-title"><i class="ph ph-layout"></i> Featured Apps</h2>
+            <div class="grid-2col">
                 
-                const badgesHtml = app.badges.map(b => 
-                    `<span class="badge text-xs bg-white/50">${b}</span>`
-                ).join('');
-
-                const buttonHtml = isLive 
-                    ? `<div class="flex gap-4 mt-auto">
-                         <a href="${app.link}" class="retro-btn bg-highlight px-6 py-2 font-bold text-sm w-full text-center hover:bg-yellow-400">Launch App</a>
-                         ${app.repo ? `<a href="${app.repo}" class="border-2 border-black px-4 py-2 font-bold text-sm hover:bg-gray-100" title="Source Code"><i class="ph ph-github-logo text-lg"></i></a>` : ''}
-                       </div>`
-                    : `<div class="flex gap-4 mt-auto">
-                         <button disabled class="border-2 border-gray-300 text-gray-400 cursor-not-allowed px-6 py-2 font-bold text-sm w-full text-center">${app.status}</button>
-                       </div>`;
-
-                const html = `
-                <article class="retro-card p-0 flex flex-col h-full ${!isLive ? 'opacity-75' : ''}">
-                    <div class="${app.bgColor} p-8 border-b-2 border-black flex items-center justify-center">
-                        <i class="ph ${app.icon} text-6xl ${app.iconColor}"></i>
+                <!-- EQ Sound Carver -->
+                <article class="app-card">
+                    <div class="app-banner">
+                        <i class="ph ph-waveform"></i>
                     </div>
-                    <div class="p-6 flex-1 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-2xl font-bold font-serif">${app.title}</h3>
-                            ${isLive ? '<span class="badge bg-green-100 border-green-900 text-green-900">Live</span>' : ''}
+                    <div class="app-info">
+                        <div class="app-title-container">
+                            <h3 class="app-title">EQ Sound Carver</h3>
+                            <span class="app-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
                         </div>
-                        <p class="text-gray-700 mb-6 flex-1">${app.description}</p>
-                        <div class="flex flex-wrap gap-2 mb-6">${badgesHtml}</div>
-                        ${buttonHtml}
+                        <p class="app-desc">An interactive phase-cancellation synthesizer inspired by Andy Brewer's YouTube masterpiece. Sculpt synthesizers, drum hits, and rhythmic patterns out of pure silence using phase-inverted pink noise and surgical equalizers.</p>
+                        <div class="badge-list">
+                            <span class="app-badge">Web Audio API</span>
+                            <span class="app-badge">Phase Cancellation</span>
+                            <span class="app-badge">Surgical EQ</span>
+                            <span class="app-badge">Live Automation</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="/eq-sound-carver/" class="btn-primary">Launch App</a>
+                            <a href="https://github.com/shangle/eq-sound-carver" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                        </div>
                     </div>
                 </article>
-                `;
-                container.innerHTML += html;
-            });
-        }
 
-        function renderGames() {
-            const container = document.getElementById('games-container');
-            
-            siteConfig.games.forEach(game => {
-                const html = `
-                <div class="retro-card p-8 flex flex-col md:flex-row gap-8 items-center">
-                    <div class="w-full md:w-1/2">
-                        <div class="aspect-video bg-black rounded-sm border-2 border-black flex items-center justify-center relative overflow-hidden group">
-                            <div class="absolute inset-0 ${game.image} opacity-80"></div>
-                            <i class="ph ph-game-controller text-white text-6xl relative z-10 group-hover:scale-110 transition-transform"></i>
-                            <div class="absolute inset-0 border-4 border-white/20 m-2"></div>
+                <!-- Executive Assistant -->
+                <article class="app-card">
+                    <div class="app-banner">
+                        <i class="ph ph-safe"></i>
+                    </div>
+                    <div class="app-info">
+                        <div class="app-title-container">
+                            <h3 class="app-title">Executive Assistant</h3>
+                            <span class="app-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                        </div>
+                        <p class="app-desc">Your local-first personal operating system for financial life data. Ingests messy transaction alerts, receipts, statements, and CSV exports, structures them using open schemas, and reconciles matches securely on your own computer.</p>
+                        <div class="badge-list">
+                            <span class="app-badge">Local SQLite</span>
+                            <span class="app-badge">Reconciliation Engine</span>
+                            <span class="app-badge">Open Standards</span>
+                            <span class="app-badge">Privacy First</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="/executive-assistant/" class="btn-primary">Launch App</a>
+                            <a href="https://github.com/shangle/Executive-Assistant" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
                         </div>
                     </div>
-                    <div class="w-full md:w-1/2">
-                        <h3 class="text-3xl font-bold font-serif mb-2">${game.title}</h3>
-                        <p class="text-gray-700 mb-4">${game.description}</p>
-                        <div class="space-y-2 mb-6">
-                            <div class="flex items-center gap-2 text-sm"><i class="ph-fill ph-check-square text-green-600"></i> No in-app purchases</div>
-                            <div class="flex items-center gap-2 text-sm"><i class="ph-fill ph-check-square text-green-600"></i> No ads</div>
+                </article>
+
+                <!-- Speak2Compose -->
+                <article class="app-card">
+                    <div class="app-banner">
+                        <i class="ph ph-music-notes-plus"></i>
+                    </div>
+                    <div class="app-info">
+                        <div class="app-title-container">
+                            <h3 class="app-title">Speak2Compose</h3>
+                            <span class="app-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
                         </div>
-                        <div class="flex gap-4">
-                            <a href="${game.link}" class="retro-btn bg-highlight px-8 py-3 font-bold inline-block hover:bg-yellow-400">Play Game</a>
-                            ${game.repo ? `<a href="${game.repo}" class="border-2 border-black px-4 py-3 font-bold hover:bg-gray-100" title="Source Code"><i class="ph ph-github-logo text-xl"></i></a>` : ''}
+                        <p class="app-desc">A Windows 98 SE themed voice-to-music live coder that generates valid Strudel syntax using Web Speech, Web Audio, and Webamp. Conduct music live simply by speaking!</p>
+                        <div class="badge-list">
+                            <span class="app-badge">Web Speech API</span>
+                            <span class="app-badge">Webamp</span>
+                            <span class="app-badge">AudioContext</span>
+                            <span class="app-badge">Creative Tool</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="/Speak2Compose/" class="btn-primary">Launch App</a>
+                            <a href="https://github.com/shangle/Speak2Compose" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Starrypad -->
+                <article class="app-card">
+                    <div class="app-banner">
+                        <i class="ph ph-music-notes"></i>
+                    </div>
+                    <div class="app-info">
+                        <div class="app-title-container">
+                            <h3 class="app-title">Starrypad</h3>
+                            <span class="app-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                        </div>
+                        <p class="app-desc">A MIDI-powered track builder. Connect your MIDI device and start building layers with the 'Magic Multiplier' for instant composition.</p>
+                        <div class="badge-list">
+                            <span class="app-badge">Web MIDI API</span>
+                            <span class="app-badge">AudioContext</span>
+                            <span class="app-badge">Creative Tool</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="starrypad.html" class="btn-primary">Launch App</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Walkthrough Creator -->
+                <article class="app-card">
+                    <div class="app-banner">
+                        <i class="ph ph-cursor-click"></i>
+                    </div>
+                    <div class="app-info">
+                        <div class="app-title-container">
+                            <h3 class="app-title">Walkthrough Creator</h3>
+                            <span class="app-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                        </div>
+                        <p class="app-desc">Train users, don't bore them. Turn static screenshots into gamified, clickable lessons. Exports a standalone HTML file you can share anywhere. No data collection, no monthly fees, just teaching.</p>
+                        <div class="badge-list">
+                            <span class="app-badge">Single File Export</span>
+                            <span class="app-badge">No Database</span>
+                            <span class="app-badge">Gamified</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="/Walkthrough-Creator/" class="btn-primary">Launch App</a>
+                            <a href="https://github.com/shangle/Walkthrough-Creator/" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-separator">
+
+    <!-- Games Section -->
+    <section id="games" class="section-padding">
+        <div class="container">
+            <h2 class="section-title"><i class="ph ph-game-controller"></i> Featured Games</h2>
+            <div class="games-grid">
+                
+                <!-- Hexa Stack Sort -->
+                <div class="game-strip">
+                    <div class="game-preview">
+                        <div class="game-overlay" style="background: linear-gradient(135deg, #93c5fd, #a855f7); position: absolute; inset: 0;"></div>
+                        <i class="ph ph-game-controller game-icon-z"></i>
+                    </div>
+                    <div class="game-details">
+                        <span class="game-genre">Puzzle / Color-Matching</span>
+                        <h3 class="game-title">Hexa Stack Sort</h3>
+                        <p class="game-desc">Stack. Merge. Chill. Escape into a colorful world of hexagonal sorting. No ads. No timers. Just pure, satisfying gameplay designed to relax your mind.</p>
+                        <div class="game-checklists">
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No in-app purchases</span>
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No ads</span>
+                        </div>
+                        <div class="app-actions" style="max-width: 320px;">
+                            <a href="/HexaSort" class="btn-primary">Play Game</a>
                         </div>
                     </div>
                 </div>
-                `;
-                container.innerHTML += html;
-            });
-        }
 
-        // Initialize
-        renderApps();
-        renderGames();
-    </script>
+                <!-- Wacky Tube Battle -->
+                <div class="game-strip">
+                    <div class="game-preview">
+                        <div class="game-overlay" style="background: linear-gradient(135deg, #3b82f6, #ef4444); position: absolute; inset: 0;"></div>
+                        <i class="ph ph-game-controller game-icon-z"></i>
+                    </div>
+                    <div class="game-details">
+                        <span class="game-genre">Physics / Fighting</span>
+                        <h3 class="game-title">Wacky Tube Battle</h3>
+                        <p class="game-desc">A chaotic physics fighter built from scratch using Verlet integration. Control an inflatable tube man and slap your way to victory in this zero-dependency browser game.</p>
+                        <div class="game-checklists">
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No in-app purchases</span>
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No ads</span>
+                        </div>
+                        <div class="app-actions" style="max-width: 320px;">
+                            <a href="/Wacky-Tube-Battle" class="btn-primary">Play Game</a>
+                        </div>
+                    </div>
+                </div>
 
-<script src="https://cdn.jsdelivr.net/gh/shangle/NagwareCreator@main/app.js"></script>
-    
+                <!-- Retro Engine Studio -->
+                <div class="game-strip">
+                    <div class="game-preview">
+                        <div class="game-overlay bg-gradient-to-br" style="background: linear-gradient(135deg, #16a34a, #3b82f6); position: absolute; inset: 0;"></div>
+                        <i class="ph ph-game-controller game-icon-z"></i>
+                    </div>
+                    <div class="game-details">
+                        <span class="game-genre">3D Engine / Level Editor</span>
+                        <h3 class="game-title">Retro Engine Studio</h3>
+                        <p class="game-desc">A modular, web-based 3D retro game engine and visual level editor. Built with Three.js to bring old-school aesthetics to the modern web.</p>
+                        <div class="game-checklists">
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No in-app purchases</span>
+                            <span class="checklist-item"><i class="ph-fill ph-check-circle"></i> No ads</span>
+                        </div>
+                        <div class="app-actions" style="max-width: 320px;">
+                            <a href="/game-poc/" class="btn-primary">Play Game</a>
+                            <a href="https://github.com/shangle/game-poc" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Labs Callout -->
+            <div class="labs-callout-card">
+                <h3 class="labs-callout-title">Looking for the Playground?</h3>
+                <p class="labs-callout-desc">
+                    I build a lot of experiments, quick prototypes, and code sketches that aren't fully featured but tell a story. You can explore my sandbox and vintage projects in the Laboratory.
+                </p>
+                <a href="labs.html" class="btn-secondary">Explore the Labs →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer & Contact -->
+    <footer id="contact">
+        <div class="container">
+            <h2 class="footer-title">Let's Connect</h2>
+            <p class="footer-desc">Have an idea for an app? Found a bug? Or just want to talk tech and theology?</p>
+            <a href="mailto:hello@shangle.me" class="footer-btn">
+                <i class="ph-fill ph-envelope-simple"></i> hello@shangle.me
+            </a>
+            <p class="footer-copyright">
+                &copy; 2026 Shangle.me. Built with ♥️ and Optimism.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Ethical Monetization Popup -->
+    <script src="https://cdn.jsdelivr.net/gh/shangle/NagwareCreator@main/app.js"></script>
+
 </body>
 </html>
-
-

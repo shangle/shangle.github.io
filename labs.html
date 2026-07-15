@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Labs | Tim Shangle</title>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts: Lora (Editorial Serif) & Outfit (Modern Sans) -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Modern CSS Design System (matching index.html) */
+        :root {
+            --bg-color: #fbfaf7;       /* Warm Alabaster/Parchment */
+            --card-bg: #ffffff;        /* Crisp White for containers */
+            --text-color: #1a1917;     /* Deep charcoal ink */
+            --text-muted: #5c5954;     /* Warm grey-brown ink */
+            --border-color: #e6e1d8;   /* Muted sand border */
+            --accent-color: #556b2f;   /* Sage Green accent */
+            --accent-light: #f1ede4;   /* Soft cream/sand */
+            --accent-dark: #3a4b20;    /* Dark sage */
+            --highlight: #f5dfbe;      /* Warm beige highlight */
+            --font-serif: 'Lora', Georgia, serif;
+            --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Reset & Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(var(--border-color) 0.8px, transparent 0.8px);
+            background-size: 32px 32px;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(251, 250, 247, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--text-color);
+            color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            border-radius: 4px;
+        }
+        .brand-text {
+            font-family: var(--font-serif);
+            font-size: 1.15rem;
+            letter-spacing: -0.01em;
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Content Header */
+        .labs-hero {
+            padding: 160px 0 60px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 60px;
+        }
+        .labs-title {
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+        .labs-subtitle {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+        }
+
+        /* Labs Listing */
+        .labs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            margin-bottom: 100px;
+        }
+        @media (max-width: 768px) {
+            .labs-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 24px rgba(28,26,23,0.02);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .lab-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(28,26,23,0.04);
+            border-color: #d1c9bd;
+        }
+        .lab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .lab-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .lab-icon {
+            font-size: 1.75rem;
+            color: var(--accent-color);
+        }
+        .lab-title {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        .lab-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+        .lab-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 24px;
+        }
+        .tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: rgba(230, 225, 216, 0.35);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text-muted);
+        }
+        .lab-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+        .btn-primary {
+            flex-grow: 1;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--text-color);
+            transition: var(--transition-smooth);
+        }
+        .btn-primary:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            background: transparent;
+        }
+        .btn-icon:hover {
+            background: var(--accent-light);
+            border-color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 60px 0;
+            text-align: center;
+        }
+        .footer-copyright {
+            font-size: 0.85rem;
+            color: #7a766f;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="brand">
+                <div class="brand-logo">S</div>
+                <span class="brand-text">shangle.me / labs</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">← Back to Featured</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Labs Hero -->
+    <section class="labs-hero">
+        <div class="container">
+            <h1 class="labs-title">The Laboratory</h1>
+            <p class="labs-subtitle">
+                An active archive of experimental code sketches, in-development tools, game jams, and historical codebases. This is where I experiment, sketch, and learn.
+            </p>
+        </div>
+    </section>
+
+    <!-- Labs Grid -->
+    <section class="container">
+        <div class="labs-grid">
+
+            <!-- AutoCut -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-video-camera lab-icon"></i>
+                        <h3 class="lab-title">AutoCut</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #edf2f7; border-color: #cbd5e0; color: #4a5568;">In Dev</span>
+                </div>
+                <p class="lab-desc">The Hank Green Pipeline. A fully automated, AI-driven video editing tool that converts raw footage into tight, fast-paced educational content using Whisper and Gemini.</p>
+                <div class="tag-list">
+                    <span class="tag">AI / ML</span>
+                    <span class="tag">FFmpeg</span>
+                    <span class="tag">Python</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="https://github.com/shangle/autocut" target="_blank" class="btn-primary">View Repository</a>
+                </div>
+            </article>
+
+            <!-- PixUrl -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-image lab-icon"></i>
+                        <h3 class="lab-title">PixUrl</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Bring data URLs to the Age of AI. A versatile utility for previewing images, generating data URLs, and quick 64x64 pixel editing with retro filters.</p>
+                <div class="tag-list">
+                    <span class="tag">Web Components</span>
+                    <span class="tag">Data URLs</span>
+                    <span class="tag">Retro Filters</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/pixurl/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/pixurl" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- Pixel Animator -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-palette lab-icon"></i>
+                        <h3 class="lab-title">Pixel Animator</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Create and share 16x16 pixel animations. Uses URL compression so you can share your creations with a single link. No accounts, no database, just pixels.</p>
+                <div class="tag-list">
+                    <span class="tag">React</span>
+                    <span class="tag">URL Compression</span>
+                    <span class="tag">No Database</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="pixel.html" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/shangle.github.io" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- The Historical Feed -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-newspaper lab-icon"></i>
+                        <h3 class="lab-title">The Historical Feed</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Experience history through a modern lens. Archival newspaper scans are deconstructed into a chronological social media feed using AI spatial analysis.</p>
+                <div class="tag-list">
+                    <span class="tag">AI / Vision</span>
+                    <span class="tag">React</span>
+                    <span class="tag">Digital Archiving</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/oldnews/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/oldnews" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- Simple Expense Tracker -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-receipt lab-icon"></i>
+                        <h3 class="lab-title">Simple Expense Tracker</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Split expenses, not friendships. The easiest way to track travel costs. No accounts to create, no servers to hack, and completely free. Just share a link.</p>
+                <div class="tag-list">
+                    <span class="tag">Local Storage</span>
+                    <span class="tag">No Account</span>
+                    <span class="tag">Travel Splitter</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/TripSplitter/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/TripSplitter/" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- Nagware Creator -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-hand-heart lab-icon"></i>
+                        <h3 class="lab-title">Nagware Creator</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">The ethical way to monetize free software. Generates a polite, self-destructing popup asking for support. No accounts, no tracking, just human connection.</p>
+                <div class="tag-list">
+                    <span class="tag">Widget Generator</span>
+                    <span class="tag">No Database</span>
+                    <span class="tag">Nagware</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/NagwareCreator/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/NagwareCreator/" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- NeonSpiro -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-aperture lab-icon"></i>
+                        <h3 class="lab-title">NeonSpiro</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Rediscover the joy of mathematical art. A hypnotic, animated drawing tool that lives entirely in your browser. Create complex patterns, add neon effects, and export your masterpieces without signing up for anything.</p>
+                <div class="tag-list">
+                    <span class="tag">Canvas API</span>
+                    <span class="tag">No Database</span>
+                    <span class="tag">Generative Art</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/NeonSpiro/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/NeonSpiro/" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- Retro Runner -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-game-controller lab-icon"></i>
+                        <h3 class="lab-title">Retro Runner</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Sometimes you just need to jump over pixelated obstacles. A vibe-coded game built in a single afternoon.</p>
+                <div class="tag-list">
+                    <span class="tag">Arcade Game</span>
+                    <span class="tag">CodePen Sketch</span>
+                    <span class="tag">Canvas API</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="https://codepen.io/shangle/full/LENOKbe" target="_blank" class="btn-primary">Play Game</a>
+                </div>
+            </article>
+
+            <!-- Mate-in-One -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-target lab-icon"></i>
+                        <h3 class="lab-title">Mate-in-One</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">Challenge yourself to find the chess mate-in-one solutions. A lightweight chess puzzle training interface built to test spatial logic and move-finding algorithms.</p>
+                <div class="tag-list">
+                    <span class="tag">Chess Engine</span>
+                    <span class="tag">Web Components</span>
+                    <span class="tag">Puzzle Solver</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/Mate-in-One/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/Mate-in-One" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+            <!-- CSS-cms -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-code lab-icon"></i>
+                        <h3 class="lab-title">CSS-cms</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #eed8c2; border-color: #e5bfa7; color: #5a2e1e;">Archive</span>
+                </div>
+                <p class="lab-desc">Who needs HTML and Javascript when you can have an entire CMS framework created in lean-mean, pure CSS? A retro-experiment in stylesheet-only layouts from 2013.</p>
+                <div class="tag-list">
+                    <span class="tag">Pure CSS</span>
+                    <span class="tag">Zero Javascript</span>
+                    <span class="tag">CMS Mockup</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="https://github.com/shangle/CSS-cms" target="_blank" class="btn-primary">View Repository</a>
+                </div>
+            </article>
+
+            <!-- spin-game -->
+            <article class="lab-card">
+                <div class="lab-header">
+                    <div class="lab-icon-title">
+                        <i class="ph ph-spinner lab-icon"></i>
+                        <h3 class="lab-title">spin-game</h3>
+                    </div>
+                    <span class="lab-badge" style="background: #e6f7ed; border-color: #c2eed5; color: #1e5a38;">Live</span>
+                </div>
+                <p class="lab-desc">A spinning wheel mini-game. Spin the wheel, trigger random rewards, and test lightweight canvas physics.</p>
+                <div class="tag-list">
+                    <span class="tag">Canvas Game</span>
+                    <span class="tag">Physics Simulation</span>
+                </div>
+                <div class="lab-actions">
+                    <a href="/spin-game/" class="btn-primary">Launch App</a>
+                    <a href="https://github.com/shangle/spin-game" target="_blank" class="btn-icon"><i class="ph ph-github-logo"></i></a>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p class="footer-copyright">
+                &copy; 2026 Shangle.me. Built with ♥️ and Optimism.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
